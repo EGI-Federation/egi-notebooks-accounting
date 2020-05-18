@@ -44,7 +44,7 @@ class VMRecord:
     public_ip_count = attr.ib(default=0)
 
     def as_dict(self):
-        return {
+        r = {
             'VMUUID': self.local_id,
             'SiteName': self.site,
             'MachineName': self.machine,
@@ -54,7 +54,7 @@ class VMRecord:
             'FQAN': self.fqan,
             'Status': self.status,
             'StartTime': int(self.start_time),
-            'EndTime': int(self.end_time),
+            'EndTime': None,
             'SuspendDuration': int(self.suspend_duration),
             'WallDuration': int(self.wall),
             'CpuDuration': int(self.cpu),
@@ -72,6 +72,9 @@ class VMRecord:
             'Benchmark': self.benchmark,
             'PublicIPCount': int(self.public_ip_count)
         }
+        if self.end_time:
+            r['EndTime'] = int(self.end_time)
+        return r
 
     def dump(self):
         record = []
