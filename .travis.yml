@@ -18,4 +18,4 @@ jobs:
     - ./build.sh
     deploy:
       provider: script
-      script: ./build.sh
+      script: ./build.sh --deploy
