@@ -16,6 +16,7 @@ jobs:
     - sudo mv helm /usr/local/bin
     - helm init --client-only
     script:
+    - env
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - CHARTPRESS_OPT=""
     - if [ "x$TRAVIS_TAG" != "x" ]; then CHARTPRESS_OPT="$CHARTPRESS_OPT --tag $TRAVIS_TAG"; fi
