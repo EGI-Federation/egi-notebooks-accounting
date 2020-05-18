@@ -16,7 +16,7 @@ jobs:
     - sudo mv helm /usr/local/bin
     - helm init --client-only
     script:
-    - build.sh
+    - ./build.sh
     deploy:
       provider: script
-      script: build.sh
+      script: ./build.sh
