@@ -16,6 +16,3 @@ jobs:
     - sudo mv helm /usr/local/bin
     script:
     - ./build.sh
-    deploy:
-      provider: script
-      script: ./build.sh --deploy
