@@ -2,6 +2,7 @@
 
 CHARTPRESS_OPT=""
 
+
 if [ "x$TRAVIS_TAG" != "x" ]; then 
      CHARTPRESS_OPT="$CHARTPRESS_OPT --tag $TRAVIS_TAG"
 fi
@@ -16,4 +17,5 @@ if [ "x$1" == "x--deploy" ]; then
     CHARTPRESS_OPT="$CHARTPRESS_OPT --push --publish-chart"
 fi
 
+git reset --hard
 chartpress $CHARTPRESS_OPT
