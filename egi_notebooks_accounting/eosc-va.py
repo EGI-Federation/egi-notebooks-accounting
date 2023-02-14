@@ -33,12 +33,8 @@ def get_max_value(prom_response):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Kubernetes Prometheus metrics harvester"
-    )
-    parser.add_argument(
-        "-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE
-    )
+    parser = argparse.ArgumentParser(description="Kubernetes Prometheus metrics harvester")
+    parser.add_argument("-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE)
     args = parser.parse_args()
 
     parser = ConfigParser()
