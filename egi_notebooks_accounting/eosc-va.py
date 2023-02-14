@@ -4,7 +4,6 @@ import argparse
 import json
 import logging
 import os
-import sys
 import time
 from configparser import ConfigParser
 
@@ -56,10 +55,12 @@ def main():
     # ==== number of users ====
     data["query"] = "jupyterhub_total_users{" + flt + "}[" + rng + "])"
     users = get_max_value(prom.query(data))
+    print(users)
 
     # ==== number of sessions ====
     data["query"] = "jupyterhub_running_servers{" + flt + "}[" + rng + "])"
     sessions = get_max_value(prom.query(data))
+    print(sessions)
 
     # now push values to EOSC accounting
     print(
