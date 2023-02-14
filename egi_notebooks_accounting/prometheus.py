@@ -13,6 +13,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 CONFIG = "prometheus"
 DEFAULT_PROMETHEUS_URL = "http://localhost:8080"
 
+
 class Prometheus:
     DEFAULT_AGENT = "egi-notebooks-client/1.0-dev"
     DEFAULT_HEADERS = {"User-Agent": DEFAULT_AGENT}
@@ -20,7 +21,9 @@ class Prometheus:
 
     def __init__(self, parser):
         config = parser[CONFIG] if CONFIG in parser else {}
-        url = os.environ.get("PROMETHEUS_URL", config.get("url", DEFAULT_PROMETHEUS_URL))
+        url = os.environ.get(
+            "PROMETHEUS_URL", config.get("url", DEFAULT_PROMETHEUS_URL)
+        )
         if not url.endswith("/"):
             url = url + "/"
         self.url = url + "api/v1"
@@ -53,7 +56,9 @@ class Prometheus:
         """REST POST request."""
         url = self.url + rel_url
         logging.debug("POST %s" % data)
-        response = self.session.post(url, data=data, headers=Prometheus.DEFAULT_HEADERS_MIME)
+        response = self.session.post(
+            url, data=data, headers=Prometheus.DEFAULT_HEADERS_MIME
+        )
         self.handle_error(response)
         return response
 

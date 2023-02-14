@@ -25,8 +25,12 @@ DEFAULT_RANGE = "4h"
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Kubernetes Prometheus metrics harvester")
-    parser.add_argument("-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE)
+    parser = argparse.ArgumentParser(
+        description="Kubernetes Prometheus metrics harvester"
+    )
+    parser.add_argument(
+        "-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE
+    )
     args = parser.parse_args()
 
     parser = ConfigParser()
@@ -41,17 +45,28 @@ def main():
     rng = os.environ.get("RANGE", config.get("range", DEFAULT_RANGE))
     spool_dir = os.environ.get("APEL_SPOOL", config.get("apel_spool"))
     usage_queries = {
-        "cpu_duration": "sum by (name) (max_over_time(container_cpu_usage_seconds_total{%s}[%s]))" % (flt, rng),
-        "cpu_count": "sum by (uid) (max_over_time(kube_pod_container_resource_requests{%s,resource='cpu'}[%s]))" % (flt, rng),
-        "memory": "sum by (name) (max_over_time(container_memory_max_usage_bytes{%s}[%s]))" % (flt, rng),
-        "network_inbound": "sum by (name) (last_over_time(container_network_receive_bytes_total{%s}[%s]))" % (flt, rng),
-        "network_outbound": "sum by (name) (last_over_time(container_network_transmit_bytes_total{%s}[%s]))" % (flt, rng),
+        "cpu_duration": "sum by (name) (max_over_time(container_cpu_usage_seconds_total{%s}[%s]))"
+        % (flt, rng),
+        "cpu_count": "sum by (uid) (max_over_time(kube_pod_container_resource_requests{%s,resource='cpu'}[%s]))"
+        % (flt, rng),
+        "memory": "sum by (name) (max_over_time(container_memory_max_usage_bytes{%s}[%s]))"
+        % (flt, rng),
+        "network_inbound": "sum by (name) (last_over_time(container_network_receive_bytes_total{%s}[%s]))"
+        % (flt, rng),
+        "network_outbound": "sum by (name) (last_over_time(container_network_transmit_bytes_total{%s}[%s]))"
+        % (flt, rng),
     }
 
     VM.site = os.environ.get("SITENAME", config.get("site", VM.site))
-    VM.cloud_type = os.environ.get("CLOUD_TYPE", config.get("cloud_type", VM.cloud_type))
-    VM.cloud_compute_service = os.environ.get("SERVICE", config.get("cloud_compute_service", VM.cloud_compute_service))
-    VM.default_vo = os.environ.get("DEFAULT_VO", config.get("default_vo", VM.default_vo))
+    VM.cloud_type = os.environ.get(
+        "CLOUD_TYPE", config.get("cloud_type", VM.cloud_type)
+    )
+    VM.cloud_compute_service = os.environ.get(
+        "SERVICE", config.get("cloud_compute_service", VM.cloud_compute_service)
+    )
+    VM.default_vo = os.environ.get(
+        "DEFAULT_VO", config.get("default_vo", VM.default_vo)
+    )
     db_file = os.environ.get("NOTEBOOKS_DB", config.get("notebooks_db", None))
 
     fqans = dict(DEFAULT_FQANS)
@@ -89,7 +104,10 @@ def main():
         pod = prom.get_pod(item)
         metric = item["metric"]
         if pod is None:
-            logging.warning("namespace %s, name %s, uid %s from kube_pod_status_phase metric not found" % (metric["namespace"], metric["pod"], metric["uid"]))
+            logging.warning(
+                "namespace %s, name %s, uid %s from kube_pod_status_phase metric not found"
+                % (metric["namespace"], metric["pod"], metric["uid"])
+            )
             continue
         running = [v[0] for v in item["values"] if v[1] == "1"]
         # last timestamp, status, and wall
@@ -120,18 +138,30 @@ def main():
         pod = prom.get_pod(item)
         metric = item["metric"]
         if pod is None:
-            logging.warning("namespace %s, name %s, uid %s from kube_pod_annotations metric not found" % (metric["namespace"], metric["pod"], metric["uid"]))
+            logging.warning(
+                "namespace %s, name %s, uid %s from kube_pod_annotations metric not found"
+                % (metric["namespace"], metric["pod"], metric["uid"])
+            )
             continue
         pod.global_user_name = metric.get("annotation_hub_jupyter_org_username", None)
         pod.primary_group = metric.get("annotation_egi_eu_primary_group", None)
     # ==== IMAGE ====
-    data["query"] = "last_over_time(kube_pod_container_info{" + flt + ",container='notebook'}[" + rng + "])"
+    data["query"] = (
+        "last_over_time(kube_pod_container_info{"
+        + flt
+        + ",container='notebook'}["
+        + rng
+        + "])"
+    )
     response = prom.query(data)
     for item in response["data"]["result"]:
         pod = prom.get_pod(item)
         metric = item["metric"]
         if pod is None:
-            logging.warning("namespace %s, name %s, uid %s from kube_pod_container_info metric not found" % (metric["namespace"], metric["pod"], metric["uid"]))
+            logging.warning(
+                "namespace %s, name %s, uid %s from kube_pod_container_info metric not found"
+                % (metric["namespace"], metric["pod"], metric["uid"])
+            )
             continue
         if "image" in metric:
             pod.image_id = metric["image"]
@@ -159,14 +189,18 @@ def main():
     # ==== FQANS postprocessing ====
     for pod in prom.pods.values():
         fqan_value = getattr(pod, fqan_key, None)
-        logging.debug("fqan evaluation: pod %s, fqan_value %s" % (pod.local_id, fqan_value))
+        logging.debug(
+            "fqan evaluation: pod %s, fqan_value %s" % (pod.local_id, fqan_value)
+        )
         for (value, vo) in fqans.items():
             if fqan_value == value:
                 pod.fqan = vo
                 break
 
     if prom.pods:
-        message = "APEL-cloud-message: v0.4\n" + "\n%%\n".join([pod.dump() for (uid, pod) in prom.pods.items()])
+        message = "APEL-cloud-message: v0.4\n" + "\n%%\n".join(
+            [pod.dump() for (uid, pod) in prom.pods.items()]
+        )
         if spool_dir:
             queue = QueueSimple.QueueSimple(spool_dir)
             queue.add(message)
