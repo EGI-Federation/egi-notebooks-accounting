@@ -22,6 +22,26 @@ DEFAULT_FILTER = ""
 DEFAULT_RANGE = "4h"
 
 
+def refresh_token():
+    #
+    print("Get this done...")
+    return ""
+
+
+def push_metric(argo_url, token, installation, metric, date_from, date_to, value):
+    data = {
+        "metric_definition_id": metric,
+        "time_period_start": date_from,
+        "time_period_end": date_to,
+        "value": value,
+    }  # should look like 2023-02-12T15:53:52Z
+    requests.post(
+        f"%argo_url/accounting-system/installations/%installation/metrics",
+        headers={"Authorization": f"Bearer %token"},
+        data=json.dumps(data),
+    )
+
+
 def get_max_value(prom_response):
     v = 0
     for item in prom_response["data"]["result"]:
@@ -32,8 +52,12 @@ def get_max_value(prom_response):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Kubernetes Prometheus metrics harvester")
-    parser.add_argument("-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE)
+    parser = argparse.ArgumentParser(
+        description="Kubernetes Prometheus metrics harvester"
+    )
+    parser.add_argument(
+        "-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE
+    )
     args = parser.parse_args()
 
     parser = ConfigParser()
@@ -63,16 +87,12 @@ def main():
     print(sessions)
 
     # now push values to EOSC accounting
-    print(
-        """
-             http -A bearer -a $ACCESS_TOKEN
-                  -v POST
-                  $ARGO_URL/accounting-system/installations/$INSTALLATION/metrics
-                  metric_definition_id=$USER_METRIC
-                  time_period_start="2023-02-12T15:53:52Z"
-                  time_period_end="2023-02-13T15:53:52Z"
-                  value=4
-         """
+    token = get_refresh_token()
+    push_metric(
+        "ARGO_URL", token, "installation", "METRIC", "tnow - range", tnow, users
+    )
+    push_metric(
+        "ARGO_URL", token, "installation", "METRIC-2", "tnow - range", tnow, sessions
     )
 
 
