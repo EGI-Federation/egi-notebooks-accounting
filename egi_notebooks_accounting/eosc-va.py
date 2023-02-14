@@ -31,10 +31,11 @@ def refresh_token():
 def push_metric(argo_url, token, installation, metric, date_from, date_to, value):
     data = {
         "metric_definition_id": metric,
+        # should look like 2023-02-12T15:53:52Z
         "time_period_start": date_from,
         "time_period_end": date_to,
         "value": value,
-    }  # should look like 2023-02-12T15:53:52Z
+    }
     requests.post(
         f"%argo_url/accounting-system/installations/%installation/metrics",
         headers={"Authorization": f"Bearer %token"},
@@ -88,12 +89,9 @@ def main():
 
     # now push values to EOSC accounting
     token = get_refresh_token()
-    push_metric(
-        "ARGO_URL", token, "installation", "METRIC", "tnow - range", tnow, users
-    )
-    push_metric(
-        "ARGO_URL", token, "installation", "METRIC-2", "tnow - range", tnow, sessions
-    )
+    tfrom = tnow - prom.parse_range(rng)
+    push_metric(argo_url, token, installation, "METRIC", tfrom, tnow, users)
+    push_metric(argo_url, token, installation, "METRIC-2", tfrom, tnow, sessions)
 
 
 if __name__ == "__main__":
