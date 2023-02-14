@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -83,3 +84,23 @@ class Prometheus:
             default.local_id = key
             return default
         return None
+
+    def parse_range(self, rng):
+        factors = {
+            "ms": "milliseconds",
+            "s": "seconds",
+            "m": "minutes",
+            "h": "hours",
+            "d": "days",
+            "w": "weeks",
+            # this is not supported by timedelta
+            "y": "years",
+        }
+        kwargs = {}
+        s = rng
+        m = re.match("(\d)(\w)", s)
+        while m:
+            kwargs[factors[m.group(2)]] = int(m.group(1))
+            s = s[m.span()[1] :]
+            m = re.match("(\d)(\w)", s)
+        return datetime.timedelta(**kwargs)
