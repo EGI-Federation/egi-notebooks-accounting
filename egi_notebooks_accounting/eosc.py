@@ -1,19 +1,15 @@
 #! /usr/bin/python3
 
 import argparse
-from datetime import datetime
 import json
 import logging
 import os
 import time
 from configparser import ConfigParser
+from datetime import datetime
 
 import requests
-import urllib3
 from requests.auth import HTTPBasicAuth
-
-# urllib3 1.9.1: from urllib3.exceptions import InsecureRequestWarning
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from .prometheus import Prometheus
 

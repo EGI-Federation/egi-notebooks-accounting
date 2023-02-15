@@ -98,10 +98,6 @@ class Prometheus:
             "y": "years",
         }
         kwargs = {}
-        s = rng
-        m = re.match("(\d+)(\w+)", s)
-        while m:
+        for m in re.finditer(r"(\d+)([^\W\d]+)", rng):
             kwargs[factors[m.group(2)]] = int(m.group(1))
-            s = s[m.span()[1] :]
-            m = re.match("(\d+)(\w+)", s)
         return datetime.timedelta(**kwargs)
