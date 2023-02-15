@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import argparse
+from datetime import datetime
 import json
 import logging
 import os
@@ -20,20 +21,29 @@ CONFIG = "prometheus"
 DEFAULT_CONFIG_FILE = "config.ini"
 DEFAULT_FILTER = ""
 DEFAULT_RANGE = "4h"
+DEFAULT_TOKEN_URL = (
+    "https://aai-demo.eosc-portal.eu/auth/realms/core/protocol/openid-connect/token"
+)
 
 
-def refresh_token():
-    #
-    print("Get this done...")
-    return ""
+def get_access_token(refresh_url, client_id, client_secret, refresh_token):
+    response = requests.post(
+        refresh_url,
+        auth=HTTPBasicAuth(client_id, client_secret),
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "scope": "openid email profile voperson_id eduperson_entitlement",
+        },
+    )
+    return response.json()["access_token"]
 
 
 def push_metric(argo_url, token, installation, metric, date_from, date_to, value):
     data = {
         "metric_definition_id": metric,
-        # should look like 2023-02-12T15:53:52Z
-        "time_period_start": date_from,
-        "time_period_end": date_to,
+        "time_period_start": date_from.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "time_period_end": date_to.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "value": value,
     }
     requests.post(
@@ -41,6 +51,7 @@ def push_metric(argo_url, token, installation, metric, date_from, date_to, value
         headers={"Authorization": f"Bearer %token"},
         data=json.dumps(data),
     )
+    # do we care about result?
 
 
 def get_max_value(prom_response):
@@ -71,6 +82,25 @@ def main():
     flt = os.environ.get("FILTER", config.get("filter", DEFAULT_FILTER))
     rng = os.environ.get("RANGE", config.get("range", DEFAULT_RANGE))
 
+    # EOSC accounting config in a separate section
+    # AAI
+    token_url = os.environ.get(
+        "TOKEN_URL", config["eosc"].get("token_url", DEFAULT_TOKEN_URL)
+    )
+    refresh_token = os.environ.get(
+        "REFRESH_TOKEN", config["eosc"].get("refresh_token", "")
+    )
+    client_id = os.environ.get("CLIENT_ID", config["eosc"].get("client_id", ""))
+    client_secret = os.environ.get(
+        "CLIENT_SECRET", config["eosc"].get("client_secret", "")
+    )
+
+    # ARGO
+    argo_url = os.environ.get("ARGO_URL", config["eosc"].get("argo_url", ""))
+    installation = config["eosc"].get("installation_id", "")
+    users_metric = config["eosc"].get("user_metric", "")
+    sessions_metric = config["eosc"].get("sessions_metric", "")
+
     prom = Prometheus(parser)
     tnow = time.time()
     data = {
@@ -80,18 +110,19 @@ def main():
     # ==== number of users ====
     data["query"] = "jupyterhub_total_users{" + flt + "}[" + rng + "])"
     users = get_max_value(prom.query(data))
-    print(users)
 
     # ==== number of sessions ====
     data["query"] = "jupyterhub_running_servers{" + flt + "}[" + rng + "])"
     sessions = get_max_value(prom.query(data))
-    print(sessions)
 
     # now push values to EOSC accounting
-    token = get_refresh_token()
-    tfrom = tnow - prom.parse_range(rng)
-    push_metric(argo_url, token, installation, "METRIC", tfrom, tnow, users)
-    push_metric(argo_url, token, installation, "METRIC-2", tfrom, tnow, sessions)
+    from_date = datetime.utcfromtimestamp(tnow)
+    to_date = from_date - prom.parse_range(rng)
+    token = get_access_token(token_url, client_id, client_secret, refresh_token)
+    push_metric(argo_url, token, installation, users_metric, from_date, to_date, users)
+    push_metric(
+        argo_url, token, installation, sessions_metric, from_date, to_date, sessions
+    )
 
 
 if __name__ == "__main__":
