@@ -50,3 +50,27 @@ data:
     {{- range $key, $val := .Values.accounting.fqan }}
     {{ $key }}={{ $val }}
     {{- end }}
+
+    # EOSC accounting
+    [eosc]
+    {{- if .Values.eosc.tokenUrl }}
+    token_url={{ .Values.eosc.tokenUrl }}
+    {{- end }}
+    {{- if .Values.eosc.refreshToken }}
+    refresh_token ={{ .Values.eosc.refreshToken }}
+    {{- end }}
+    {{- if .Values.eosc.clientSecret }}
+    client_secret ={{ .Values.eosc.clientSecret }}
+    {{- end }}
+    {{- if .Values.eosc.argoUrl }}
+    argo_url={{ .Values.eosc.argoUrl }}
+    {{- end }}
+    {{- if .Values.eosc.installationID }}
+    installation_id={{ .Values.eosc.installationID }}
+    {{- end }}
+    {{- if .Values.eosc.userMetric }}
+    user_metric={{ .Values.eosc.userMetric }}
+    {{- end }}
+    {{- if .Values.eosc.sessionsMetric }}
+    sessions_metric={{ .Values.eosc.sessionsMetric }}
+    {{- end }}

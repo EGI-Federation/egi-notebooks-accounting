@@ -48,6 +48,20 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# EOSC accounting paramters
+eosc:
+  # (empty value to disable)
+  schedule: 23 3 * * *
+  # configuration for the EOSC accounting
+  tokenUrl:
+  refreshToken:
+  clientSecret:
+  argoUrl:
+  installationID:
+  userMetric:
+  sessionsMetric:
+
+
 # APEL sender parameters
 ssm:
   # (empty value to disable)
