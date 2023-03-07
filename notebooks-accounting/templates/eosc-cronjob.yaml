@@ -1,0 +1,39 @@
+---
+{{- if .Values.eosc.schedule }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: notebooks-accounting-eosc
+  labels:
+    {{- include "notebooks-accounting.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.eosc.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: {{ .Chart.Name }} 
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- with .Values.imagePullSecrets }}
+              imagePullSecrets:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              command: ["egi-notebooks-eosc-accounting", "-c", "/etc/egi-notebooks-accounting/config.ini"]
+              resources:
+{{ toYaml .Values.resources | indent 16 }}
+        {{- with .Values.nodeSelector }}
+          nodeSelector:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- with .Values.affinity }}
+          affinity:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+          tolerations:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+{{- end }}
