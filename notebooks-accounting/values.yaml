@@ -55,12 +55,12 @@ eosc:
   # configuration for the EOSC accounting
   tokenUrl:
   refreshToken:
+  clientId:
   clientSecret:
   argoUrl:
-  installationID:
-  userMetric:
+  installationId:
+  usersMetric:
   sessionsMetric:
-
 
 # APEL sender parameters
 ssm:
