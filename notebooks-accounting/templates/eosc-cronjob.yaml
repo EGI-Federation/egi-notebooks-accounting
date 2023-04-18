@@ -14,7 +14,7 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - name: {{ .Chart.Name }} 
+            - name: {{ .Chart.Name }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               {{- with .Values.imagePullSecrets }}
@@ -24,6 +24,10 @@ spec:
               command: ["egi-notebooks-eosc-accounting", "-c", "/etc/egi-notebooks-accounting/config.ini"]
               resources:
 {{ toYaml .Values.resources | indent 16 }}
+              volumeMounts:
+                - name: accounting-config
+                  mountPath: /etc/egi-notebooks-accounting
+                  readOnly: true
         {{- with .Values.nodeSelector }}
           nodeSelector:
 {{ toYaml . | indent 12 }}
@@ -36,4 +40,8 @@ spec:
           tolerations:
 {{ toYaml . | indent 12 }}
         {{- end }}
+          volumes:
+            - name: accounting-config
+              configMap:
+                name: accounting
 {{- end }}
