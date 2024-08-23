@@ -22,6 +22,11 @@ spec:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
               command: ["egi-notebooks-eosc-accounting", "-c", "/etc/egi-notebooks-accounting/config.ini"]
+              {{- if .Values.debug }}
+              env:
+                - name: VERBOSE
+                  value: "1"
+              {{- end}}
               resources:
 {{ toYaml .Values.resources | indent 16 }}
               volumeMounts:

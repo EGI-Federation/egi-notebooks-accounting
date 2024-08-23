@@ -22,6 +22,11 @@ spec:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
               command: ["egi-notebooks-accounting-dump", "-c", "/etc/egi-notebooks-accounting/config.ini"]
+              {{- if .Values.debug }}
+              env:
+                - name: VERBOSE
+                  value: "1"
+              {{- end}}
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
               volumeMounts:
