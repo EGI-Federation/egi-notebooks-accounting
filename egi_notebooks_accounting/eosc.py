@@ -170,8 +170,8 @@ def generate_day_metrics(
                 "metric_definition_id": metric_key,
                 "time_period_start": period_start_str,
                 "time_period_end": period_end_str,
-                "user": user,
-                "group": group,
+                "user_id": user,
+                "group_id": group,
                 "value": value,
             }
             logging.debug(f"Sending metric {metric_data} to accounting")
