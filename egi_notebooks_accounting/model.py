@@ -22,7 +22,7 @@ class VM(BaseModel):
     local_user_id = CharField(null=True)
     local_group_id = CharField(null=True)
     global_user_name = CharField(null=True)
-    fqan = CharField()
+    fqan = CharField(null=True)
     status = CharField(null=True)
     start_time = DateTimeField(null=True)
     end_time = DateTimeField(null=True)
