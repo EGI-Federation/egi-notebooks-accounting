@@ -38,6 +38,8 @@ client_id=<client_id>
 accounting_url=https://api.acc.staging.eosc.grnet.gr
 installaion_id=<id of the installation to report accounting for>
 timestamp_file=<file where the timestamp of the last run is kept>
+# define which users to ignore for EOSC accounting
+ignore_users=monitor
 
 [eosc.flavors]
 # contains a list of flavors and metrics they are mapped to
@@ -67,6 +69,7 @@ DEFAULT_CONFIG_FILE = "config.ini"
 DEFAULT_TOKEN_URL = "https://proxy.staging.eosc-federation.eu/OIDC/token"
 DEFAULT_ACCOUNTING_URL = "https://api.acc.staging.eosc.grnet.gr"
 DEFAULT_TIMESTAMP_FILE = "eosc-accounting.timestamp"
+DEFAULT_IGNORE_USERS = ["monitor"]
 
 
 def get_access_token(token_url, client_id, client_secret):
@@ -148,6 +151,7 @@ def generate_day_metrics(
     flavor_config,
     timestamp_file,
     installation,
+    ignore_users,
     dry_run,
 ):
     logging.info(f"Generate metrics from {period_start} to {period_end}")
@@ -165,6 +169,9 @@ def generate_day_metrics(
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
     period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
     for (user, group), flavors in metrics.items():
+        if user in ignore_users:
+            logging.debug(f"Not sending metrics for user {user} (set to ignore)")
+            continue
         for metric_key, value in flavors.items():
             metric_data = {
                 "metric_definition_id": metric_key,
@@ -236,6 +243,8 @@ def main():
         "TIMESTAMP_FILE", eosc_config.get("timestamp_file", DEFAULT_TIMESTAMP_FILE)
     )
 
+    ignore_users = eosc_config.get("ignore_users", DEFAULT_IGNORE_USERS)
+
     # ==== queries ====
     from_date, to_date = get_from_to_dates(args, timestamp_file)
     logging.debug(f"Reporting from {from_date} to {to_date}")
@@ -251,6 +260,7 @@ def main():
             flavor_config,
             timestamp_file,
             installation,
+            ignore_users,
             args.dry_run,
         )
         period_start = period_end + timedelta(minutes=1)
