@@ -39,7 +39,7 @@ accounting_url=https://api.acc.staging.eosc.grnet.gr
 installaion_id=<id of the installation to report accounting for>
 timestamp_file=<file where the timestamp of the last run is kept>
 # define which users to ignore for EOSC accounting
-ignore_users=monitoring
+ignore_users=monitor
 
 [eosc.flavors]
 # contains a list of flavors and metrics they are mapped to
@@ -69,7 +69,7 @@ DEFAULT_CONFIG_FILE = "config.ini"
 DEFAULT_TOKEN_URL = "https://proxy.staging.eosc-federation.eu/OIDC/token"
 DEFAULT_ACCOUNTING_URL = "https://api.acc.staging.eosc.grnet.gr"
 DEFAULT_TIMESTAMP_FILE = "eosc-accounting.timestamp"
-DEFAULT_IGNORE_USERS = ["monitoring"]
+DEFAULT_IGNORE_USERS = ["monitor"]
 
 
 def get_access_token(token_url, client_id, client_secret):
