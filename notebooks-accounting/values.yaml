@@ -55,7 +55,7 @@ image:
 # EOSC accounting paramters
 eosc:
   # (empty value to disable)
-  schedule: 42 3 * * *
+  schedule:
   # configuration for the EOSC accounting
   tokenUrl:
   clientId:
