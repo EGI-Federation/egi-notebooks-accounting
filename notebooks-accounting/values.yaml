@@ -39,8 +39,11 @@ prometheus:
 storage:
   pvcName: shared-accounting-pvc
   size: 2Gi
-  # directory pool for APEL dumps (empty value to disable)
-  apelSpool:
+  # directory pool for APEL dumps
+  # * empty value: forces dumps not to be created
+  # * non-empty value: forces dumps to be created
+  # * default: automatic by ssm config (schedule and messaging.path)
+  # apelSpool: /accounting/ssm
   # storage to local sqlite database (empty value to disable)
   notebooksDb: /accounting/notebooks.db
   # timestamp file (empty value to disable)
@@ -68,10 +71,17 @@ eosc:
 ssm:
   # (empty value to disable)
   schedule:
+  broker:
+    # msg.argo.grnet.gr, msg-devel.argo.grnet.gr
+    host: msg.argo.grnet.gr
+    port:
   image:
     repository: stfc/ssm
     tag: release-3.2.1
     pullPolicy: IfNotPresent
+  messaging:
+    destination: eu-egi-cloud-accounting
+    path: /accounting/ssm
   hostcert:
   hostkey:
 

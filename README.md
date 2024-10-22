@@ -6,18 +6,15 @@ EGI Notebooks accounting tools.
 
 See *notebooks-accounting/values.yaml* for Helm package values.
 
-Enabling APEL accounting:
+Enable APEL accounting:
 
     ssm:
-      # enable APEL (sender)
+      # enable APEL sender
       schedule: 42 1 * * *
       hostcert: ...
       hostkey: ...
-    storage:
-      # APEL dump files would be kept, this will disable APEL dumps
-      apelSpool: /accounting/ssm
 
-Enabling EOSC accounting:
+Enable EOSC accounting:
 
     eosc:
       schedule: 42 1 * * *
@@ -30,9 +27,18 @@ Enabling EOSC accounting:
         flavor1: id1
         ...
 
-## Local database
+## Debugging
 
-By default local database export to */accounts/notebooks.db* is enabled. It can be disabled by setting location to empty value:
+Verbosity:
+
+    debug: true
+
+Create APEL dumps even without enabled ssm:
+
+    storage:
+      apelSpool: /accounting/ssm
+
+Local database export to */accounts/notebooks.db* is enabled by default. It can be disabled by setting the location to empty value:
 
     storage:
       notebooksDb:

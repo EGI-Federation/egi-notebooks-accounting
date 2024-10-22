@@ -22,8 +22,10 @@ data:
     # Alternatively, 'host' and 'port' may be set manually (with 'bdii' and
     # 'network' commented out). This option must be used for AMS.
     #host: msg-devel.argo.grnet.gr
-    host: msg.argo.grnet.gr
-    #port: 443
+    host: {{ .Values.ssm.broker.host }}
+{{- if .Values.ssm.broker.port }}
+    port:  {{ .Values.ssm.broker.port }}
+{{- end }}
     # broker authentication.  If use_ssl is set, the certificates configured
     # in the mandatory [certificates] section will be used.
     use_ssl: false
@@ -43,11 +45,11 @@ data:
     # If using AMS this is the project that SSM will connect to. Ignored for STOMP.
     ams_project: accounting
     # Queue to which SSM will send messages
-    destination: eu-egi-cloud-accounting
+    destination: {{ .Values.ssm.messaging.destination }}
     # Supplied path type ('dirq', 'directory')
     # path_type: dirq
     # Outgoing messages will be read and removed from this directory.
-    path: {{ .Values.accounting.apelSpool | default "/accounting/ssm" }}
+    path: {{ .Values.ssm.messaging.path | default "/accounting/ssm" }}
     [logging]
     logfile: /var/log/apel/ssmsend.log
     # Available logging levels:

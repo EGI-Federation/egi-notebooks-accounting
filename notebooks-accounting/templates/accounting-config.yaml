@@ -24,8 +24,10 @@ data:
     {{- if.Values.debug }}
     verbose=1
     {{- end }}
-    {{- if .Values.storage.apelSpool }}
+    {{- if hasKey .Values.storage "apelSpool" }}
     apel_spool={{ .Values.storage.apelSpool }}
+    {{- else if .Values.ssm.schedule }}
+    apel_spool={{ .Values.ssm.messaging.path }}
     {{- else }}
     # apel_spool=
     {{- end }}
