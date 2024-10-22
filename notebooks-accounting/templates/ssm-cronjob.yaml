@@ -17,11 +17,18 @@ spec:
             - name: ssm
               image: "{{ .Values.ssm.image.repository }}:{{ .Values.ssm.image.tag }}"
               imagePullPolicy: {{ .Values.ssm.image.pullPolicy }}
+              lifecycle:
+                postStart:
+                  exec:
+                    command:
+                      - "/bin/sh"
+                      - "-c"
+                      - "mkdir /etc/grid-security; install -v -m 0600 /secrets/hostkey.pem /etc/grid-security/; install -v -m 0644 /secrets/hostcert.pem /etc/grid-security/; true"
               command: ["ssmsend"]
               volumeMounts:
                 - mountPath: /accounting
                   name: shared-accounting-vol
-                - mountPath: /etc/grid-security
+                - mountPath: /secrets
                   name: hostcert
                 - mountPath: /etc/apel
                   name: config
