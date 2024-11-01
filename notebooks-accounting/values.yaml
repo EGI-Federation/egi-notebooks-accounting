@@ -42,6 +42,7 @@ prometheus:
 # Permanent storage, mounted at '/accounting'
 storage:
   pvcName: shared-accounting-pvc
+  # className:
   size: 2Gi
   # directory pool for APEL dumps
   # * empty value: forces dumps not to be created
