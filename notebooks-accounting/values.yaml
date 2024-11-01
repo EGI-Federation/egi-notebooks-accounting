@@ -34,6 +34,10 @@ accounting:
 # Prometheus endpoint
 prometheus:
   url: "http://prometheus-server.prometheus.svc.cluster.local"
+  # user:
+  # password:
+  # filter: "'pod=~'jupyter-.*'"
+  # range: 24h
 
 # Permanent storage, mounted at '/accounting'
 storage:

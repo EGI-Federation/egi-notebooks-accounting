@@ -43,11 +43,27 @@ data:
     {{- else }}
     # url=http://localhost:8080
     {{- end }}
+    {{- if .Values.prometheus.user }}
+    user={{ .Values.prometheus.user }}
+    {{- else }}
     # user=
+    {{- end }}
+    {{- if .Values.prometheus.password }}
+    password={{ .Values.prometheus.password }}
+    {{- else }}
     # password=
+    {{- end }}
     # verify=0
+    {{- if hasKey .Values.prometheus "filter" }}
+    filter={{ .Values.prometheus.filter }}
+    {{- else }}
     # filter=pod=~'jupyter-.*'
+    {{- end }}
+    {{- if .Values.prometheus.range }}
+    range={{ .Values.prometheus.range }}
+    {{- else }}
     range=24h
+    {{- end }}
 
     # mapping from k8s namespace to VO
     [VO]

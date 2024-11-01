@@ -18,7 +18,7 @@ DEFAULT_CONFIG_FILE = "config.ini"
 DEFAULT_FILTER = "pod=~'jupyter-.*'"
 DEFAULT_FQANS: Dict[str, List[str]] = {}
 DEFAULT_FQAN_KEY = "primary_group"
-DEFAULT_RANGE = "4h"
+DEFAULT_RANGE = "24h"
 
 
 def main():
