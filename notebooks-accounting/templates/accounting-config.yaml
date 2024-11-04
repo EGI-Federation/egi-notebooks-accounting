@@ -62,7 +62,7 @@ data:
     {{- if .Values.prometheus.range }}
     range={{ .Values.prometheus.range }}
     {{- else }}
-    range=24h
+    # range=24h
     {{- end }}
 
     # mapping from k8s namespace to VO
