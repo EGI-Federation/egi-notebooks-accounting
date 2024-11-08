@@ -23,8 +23,11 @@ spec:
                     command:
                       - "/bin/sh"
                       - "-c"
-                      - "mkdir /etc/grid-security; install -v -m 0600 /secrets/hostkey.pem /etc/grid-security/; install -v -m 0644 /secrets/hostcert.pem /etc/grid-security/; true"
-              command: ["ssmsend"]
+                      - "mkdir /etc/grid-security; install -v -m 0600 /secrets/hostkey.pem /etc/grid-security/; install -v -m 0644 /secrets/hostcert.pem /etc/grid-security/; touch /tmp/ssm-started.txt"
+              command:
+                - "/bin/sh"
+                - "-c"
+                - "while [ ! -f /tmp/ssm-started.txt ] && [ \"$i\" -lt 50 ]; do sleep 0.1; i=$((i+1)); done; ssmsend"
               volumeMounts:
                 - mountPath: /accounting
                   name: shared-accounting-vol
