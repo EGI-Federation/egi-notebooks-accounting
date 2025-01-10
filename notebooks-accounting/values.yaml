@@ -87,6 +87,7 @@ ssm:
   messaging:
     destination: eu-egi-cloud-accounting
     path: /accounting/ssm
+    token:
   hostcert:
   hostkey:
 

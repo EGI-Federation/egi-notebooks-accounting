@@ -24,7 +24,7 @@ data:
     #host: msg-devel.argo.grnet.gr
     host: {{ .Values.ssm.broker.host }}
 {{- if .Values.ssm.broker.port }}
-    port:  {{ .Values.ssm.broker.port }}
+    port: {{ .Values.ssm.broker.port }}
 {{- end }}
     # broker authentication.  If use_ssl is set, the certificates configured
     # in the mandatory [certificates] section will be used.
@@ -50,6 +50,9 @@ data:
     # path_type: dirq
     # Outgoing messages will be read and removed from this directory.
     path: {{ .Values.ssm.messaging.path | default "/accounting/ssm" }}
+{{- if .Values.ssm.messaging.token }}
+    token: {{ .Values.ssm.messaging.token }}
+{{- end }}
     [logging]
     logfile: /var/log/apel/ssmsend.log
     # Available logging levels:
