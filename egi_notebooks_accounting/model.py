@@ -56,7 +56,7 @@ class VM(BaseModel):
             "EndTime": None,
             "SuspendDuration": int(self.suspend_duration),
             "WallDuration": int(self.wall),
-            "CpuDuration": round(float(self.cpu_duration), 3),
+            "CpuDuration": round(float(self.cpu_duration)),
             "CpuCount": round(float(self.cpu_count), 3),
             "NetworkType": self.network_type,
             "NetworkInbound": int(self.network_inbound),
