@@ -81,8 +81,8 @@ ssm:
     host: msg.argo.grnet.gr
     port:
   image:
-    repository: stfc/ssm
-    tag: release-3.2.1
+    repository: ghcr.io/apel/ssm
+    tag: 3.4.1-1
     pullPolicy: IfNotPresent
   messaging:
     destination: eu-egi-cloud-accounting
