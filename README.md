@@ -4,7 +4,7 @@ EGI Notebooks accounting tools.
 
 ## Required settings
 
-See *notebooks-accounting/values.yaml* for Helm package values.
+See _notebooks-accounting/values.yaml_ for Helm package values.
 
 Enable APEL accounting:
 
@@ -38,7 +38,7 @@ Create APEL dumps even without enabled ssm:
     storage:
       apelSpool: /accounting/ssm
 
-Local database export to */accounts/notebooks.db* is enabled by default. It can be disabled by setting the location to empty value:
+Local database export to _/accounts/notebooks.db_ is enabled by default. It can be disabled by setting the location to empty value:
 
     storage:
       notebooksDb:
@@ -47,7 +47,7 @@ Local database export to */accounts/notebooks.db* is enabled by default. It can 
 
 FQAN filed mapping for accounting.
 
-By default the values are taken from *primary\_group* field (=the first matched OIDC role in hub config *allowed\_groups*).
+By default the values are taken from _primary_group_ field (=the first matched OIDC role in hub config _allowed_groups_).
 
 Example (multiple values per FQAN possible, separated by comma):
 
