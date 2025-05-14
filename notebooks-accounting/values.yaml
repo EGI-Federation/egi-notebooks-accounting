@@ -55,7 +55,7 @@ storage:
   timestamp: /accounting/eosc-timestamp
 
 image:
-  repository: eginotebooks/svc-accounting
+  repository: registry.egi.eu/vo.notebooks.egi.eu/svc-accounting
   # pullPolicy:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

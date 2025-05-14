@@ -1,0 +1,56 @@
+---
+name: Create helm chart
+
+on:
+  push:
+    # only pushes on master so we don't push intermediate results
+    branches:
+      - master
+      # also when tagging so we get nice versioning
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  chart:
+    name: Create chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up python
+        uses: actions/setup-python@v5
+      - name: Install requirements
+        run: |
+          pip install -r dev-requirements.txt
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+      - name: Build chart
+        run: |
+          chartpress
+      - name: Login to image registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.REGISTRY_SERVER }}
+          username: ${{ vars.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+        if: github.event_name != 'pull_request'
+      - name: Login to chart registry
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | helm registry login --username "${{ vars.REGISTRY_USERNAME }}" --password-stdin "${{ vars.REGISTRY_SERVER }}"
+        if: github.event_name != 'pull_request'
+      - name: Push chart
+        run: |
+          git config --global user.name "egibot"
+          git config --global user.email "egibot@egi.eu"
+          # update version, build image, push image
+          chartpress --push
+          helm package notebooks-accounting
+          f="$(find . -maxdepth 1 -name notebooks-accounting-\*.tgz | head -n 1)"
+          helm push "$f" "oci://${{ vars.REGISTRY_SERVER }}/${{ vars.REGISTRY_CHART_PROJECT }}"
+        if: github.event_name != 'pull_request'
