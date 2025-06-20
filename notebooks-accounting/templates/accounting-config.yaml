@@ -21,6 +21,11 @@ data:
     {{- else }}
     # cloud_compute_service=
     {{- end }}
+    {{- if .Values.accounting.defaultCpuCount }}
+    default_cpu_count={{ .Values.accounting.defaultCpuCount }}
+    {{- else }}
+    # default_cpu_count=
+    {{- end }}
     {{- if.Values.debug }}
     verbose=1
     {{- end }}

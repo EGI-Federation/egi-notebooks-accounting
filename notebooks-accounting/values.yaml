@@ -13,6 +13,13 @@ accounting:
   cloudType: EGI Notebooks
   service:
 
+  #
+  # APEL only: default CPU count to use for pods without CPU limit
+  #
+  # The empty value (default) will drop a message without CPU for APEL.
+  #
+  defaultCpuCount:
+
   # catchall FQAN for values not specified in the fqan mapping
   default_fqan: vo.notebooks.egi.eu
 

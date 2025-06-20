@@ -14,6 +14,7 @@ class VM(BaseModel):
     site = "EGI-NOTEBOOKS"
     cloud_type = "EGI Notebooks"
     cloud_compute_service = None
+    default_cpu_count = None
 
     namespace = CharField()
     primary_group = None
@@ -78,10 +79,19 @@ class VM(BaseModel):
             r["EndTime"] = int(self.end_time.timestamp())
         return r
 
+    def valid_apel(self):
+        """Enable this record for APEL
+
+        Returns true, if this record has values valid for sending to APEL.
+        """
+        return self.cpu_count != 0 or VM.default_cpu_count is not None
+
     def dump(self):
         record = []
         for k, v in self.as_dict().items():
             if v is not None:
+                if k == "CpuCount" and self.cpu_count == 0 and VM.default_cpu_count:
+                    v = self.default_cpu_count
                 record.append("{0}: {1}".format(k, v))
         return "\n".join(record)
 

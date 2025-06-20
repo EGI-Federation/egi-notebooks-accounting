@@ -63,6 +63,10 @@ def main():
     VM.cloud_compute_service = os.environ.get(
         "SERVICE", config.get("cloud_compute_service", VM.cloud_compute_service)
     )
+    VM.default_cpu_count = os.environ.get(
+        "DEFAULT_CPU_COUNT",
+        config.get("default_cpu_count", VM.default_cpu_count),
+    )
     db_file = os.environ.get("NOTEBOOKS_DB", config.get("notebooks_db", None))
 
     fqans = dict(DEFAULT_FQANS)
@@ -206,7 +210,7 @@ def main():
         if spool_dir:
             queue = QueueSimple.QueueSimple(spool_dir)
             message = "APEL-cloud-message: v0.4\n" + "\n%%\n".join(
-                [pod.dump() for (uid, pod) in prom.pods.items()]
+                (pod.dump() for (uid, pod) in prom.pods.items() if pod.valid_apel())
             )
             queue.add(message)
             logging.debug("Dumped %d records to spool dir", len(prom.pods))
