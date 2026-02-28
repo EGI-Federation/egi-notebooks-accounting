@@ -57,3 +57,15 @@ Example (multiple values per FQAN possible, separated by comma):
       fqan:
         vo.access.egi.eu: urn:mace:egi.eu:group:vo.access.egi.eu:role=member#aai.egi.eu
         vo.notebooks.egi.eu: urn:mace:egi.eu:group:vo.notebooks.egi.eu:role=member#aai.egi.eu
+
+## Unit tests
+
+In _egi\_notebooks\_accounting_.
+
+Launch:
+
+    pytest
+
+Launch with detailed output:
+
+    pytest -v --log-cli-level=INFO

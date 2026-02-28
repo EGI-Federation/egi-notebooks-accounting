@@ -216,7 +216,7 @@ def generate_day_metrics(
             logging.debug("Failed to write timestamp file '{timestamp_file}': {e}")
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="EOSC Accounting metric pusher")
     parser.add_argument(
         "-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE
@@ -226,7 +226,7 @@ def main():
     )
     parser.add_argument("--from-date", help="Start date to report from")
     parser.add_argument("--to-date", help="End date to report to")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     parser = ConfigParser()
     parser.read(args.config)
