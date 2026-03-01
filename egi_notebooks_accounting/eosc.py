@@ -36,7 +36,7 @@ token_url=https://proxy.staging.eosc-federation.eu/OIDC/token
 client_secret=<client secret>
 client_id=<client_id>
 accounting_url=https://api.acc.staging.eosc.grnet.gr
-installaion_id=<id of the installation to report accounting for>
+installation_id=<id of the installation to report accounting for>
 timestamp_file=<file where the timestamp of the last run is kept>
 
 [eosc.flavors]
