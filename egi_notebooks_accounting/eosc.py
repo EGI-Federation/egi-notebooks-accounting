@@ -103,12 +103,12 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
     flavor_metric = flavor_config[pod.flavor]
     metrics[(user, group)] = user_metrics
 
-    if pod.start_time is None:
+    if pod.start_time.is_null():
         report_start_time = period_start
     else:
         report_start_time = max(period_start, pod.start_time)
 
-    if pod.end_time is None:
+    if pod.end_time.is_null():
         report_end_time = period_end
     else:
         report_end_time = min(period_end, pod.end_time)
@@ -143,7 +143,7 @@ def get_from_to_dates(args, timestamp_file):
     else:
         # go until last minute of yesterday
         report_day = date.today() - timedelta(days=1)
-        to_date = datetime(report_day.year, report_day.month, report_day.day, 23, 59)
+        to_date = report_day + timedelta(days=1, microseconds=-1)
     utc = pytz.UTC
     from_date = from_date.replace(tzinfo=utc)
     to_date = to_date.replace(tzinfo=utc)
