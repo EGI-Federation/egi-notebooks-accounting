@@ -93,9 +93,7 @@ def push_metric(accounting_url, token, installation, metric_data):
     response.raise_for_status()
 
 
-def update_pod_metric(
-    pod, metrics, flavor_config, period_start, pod_start, period_end, pod_end
-):
+def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
     if not pod.flavor or pod.flavor not in flavor_config:
         # cannot report
         logging.debug(f"Flavor {pod.flavor} does not have a configured metric")
@@ -103,18 +101,17 @@ def update_pod_metric(
     user, group = (pod.global_user_name, pod.fqan)
     user_metrics = metrics.get((user, group), {})
     flavor_metric = flavor_config[pod.flavor]
-    flavor_metric_value = user_metrics.get(flavor_metric, 0)
     metrics[(user, group)] = user_metrics
 
-    if pod_start is None:
+    if pod.start_time is None:
         report_start_time = period_start
     else:
-        report_start_time = max(period_start, pod_start)
+        report_start_time = max(period_start, pod.start_time)
 
-    if pod_end is None:
+    if pod.end_time is None:
         report_end_time = period_end
     else:
-        report_end_time = min(period_end, period_end)
+        report_end_time = min(period_end, pod.end_time)
 
     user_metrics[flavor_metric] = report_end_time - report_start_time
 
@@ -174,9 +171,7 @@ def generate_day_metrics(
             metrics,
             flavor_config,
             period_start,
-            pod.start_time,
             period_end,
-            pod.end_time,
         )
 
     # pods starting but not finished between the reporting times
@@ -189,9 +184,7 @@ def generate_day_metrics(
             metrics,
             flavor_config,
             period_start,
-            pod.start_time,
             period_end,
-            pod.end_time,
         )
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
     period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
