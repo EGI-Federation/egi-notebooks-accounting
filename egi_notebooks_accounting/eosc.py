@@ -93,7 +93,9 @@ def push_metric(accounting_url, token, installation, metric_data):
     response.raise_for_status()
 
 
-def update_pod_metric(pod, metrics, flavor_config, period_start, pod_start, period_end, pod_end):
+def update_pod_metric(
+    pod, metrics, flavor_config, period_start, pod_start, period_end, pod_end
+):
     if not pod.flavor or pod.flavor not in flavor_config:
         # cannot report
         logging.debug(f"Flavor {pod.flavor} does not have a configured metric")
@@ -115,6 +117,7 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, pod_start, peri
         report_end_time = min(period_end, period_end)
 
     user_metrics[flavor_metric] = report_end_time - report_start_time
+
 
 def get_from_to_dates(args, timestamp_file):
     from_date = None
@@ -173,12 +176,13 @@ def generate_day_metrics(
             period_start,
             pod.start_time,
             period_end,
-            pod.end_time
+            pod.end_time,
         )
-    
+
     # pods starting but not finished between the reporting times
     for pod in VM.select().where(
-        (VM.start_time <= period_end) & (VM.end_time.is_null() | (VM.end_time > period_end))
+        (VM.start_time <= period_end)
+        & (VM.end_time.is_null() | (VM.end_time > period_end))
     ):
         update_pod_metric(
             pod,
@@ -187,7 +191,7 @@ def generate_day_metrics(
             period_start,
             pod.start_time,
             period_end,
-            pod.end_time
+            pod.end_time,
         )
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
     period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
