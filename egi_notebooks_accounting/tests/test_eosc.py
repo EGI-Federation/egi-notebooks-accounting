@@ -121,7 +121,9 @@ def launch_eosc(
     hist_size: int = len(requests_mock.request_history)
     results_size: int = len(results)
     if hist_size != len(results) + metrics_count:
-        logging.error(f"Expected number of token requests {results_size}, pushed metrics {metrics_count}, but number of requests is {hist_size}")
+        logging.error(
+            f"Expected number of token requests {results_size}, pushed metrics {metrics_count}, but number of requests is {hist_size}"
+        )
     i = 1
     h: int = 0
     for result in results:
