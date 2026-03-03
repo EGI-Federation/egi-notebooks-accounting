@@ -115,9 +115,9 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
         report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
 
     flavor_metric_value = user_metrics.get(flavor_metric, 0)
-    user_metrics[flavor_metric] = flavor_metric_value + (
-        report_end_time - report_start_time
-    ).total_seconds()
+    user_metrics[flavor_metric] = (
+        flavor_metric_value + (report_end_time - report_start_time).total_seconds()
+    )
 
 
 def get_from_to_dates(args, timestamp_file):
