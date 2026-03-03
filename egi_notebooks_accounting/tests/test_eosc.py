@@ -12,7 +12,8 @@ from .conftest import TestHelpers
 
 
 # microsecond time in hours
-MICROSECOND: float = (10 ** -6) / 3600
+MICROSECOND: float = (10**-6) / 3600
+
 
 @pytest.fixture(scope="function")
 def delete_timestamp(pytestconfig):
@@ -215,7 +216,14 @@ def test_broad(pytestconfig, requests_mock, delete_timestamp) -> None:
         3 * 24 * 3600,
     ]
     logging.error("Known issue: missing microsecond per day")
-    results: list[float] = [0, 1.0 - MICROSECOND, 24.0 - MICROSECOND, 24.0 - MICROSECOND, 23.0, 0]
+    results: list[float] = [
+        0,
+        1.0 - MICROSECOND,
+        24.0 - MICROSECOND,
+        24.0 - MICROSECOND,
+        23.0,
+        0,
+    ]
 
     launch_eosc(
         pytestconfig, requests_mock, from_date, start_times, wall_times, results
