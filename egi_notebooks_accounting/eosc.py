@@ -129,9 +129,9 @@ def get_from_to_dates(args, timestamp_file):
             with open(timestamp_file, "r") as tsf:
                 try:
                     from_date = dateutil.parser.parse(tsf.read())
-                    from_date = (from_date + timedelta(minutes=1)).replace(
+                    from_date = from_date.replace(
                         hour=0, minute=0, second=0, microsecond=0
-                    )
+                    ) + timedelta(days=1)
                 except dateutil.parser.ParserError as e:
                     logging.debug(
                         f"Invalid timestamp content in '{timestamp_file}': {e}"
