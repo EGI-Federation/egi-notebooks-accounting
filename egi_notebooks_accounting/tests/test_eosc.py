@@ -10,7 +10,6 @@ from .. import eosc
 from ..model import VM
 from .conftest import TestHelpers
 
-
 # microsecond time in hours
 MICROSECOND: float = (10**-6) / 3600
 
