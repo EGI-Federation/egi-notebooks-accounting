@@ -129,9 +129,6 @@ def get_from_to_dates(args, timestamp_file):
             with open(timestamp_file, "r") as tsf:
                 try:
                     from_date = dateutil.parser.parse(tsf.read())
-                    from_date = from_date.replace(
-                        hour=0, minute=0, second=0, microsecond=0
-                    ) + timedelta(days=1)
                 except dateutil.parser.ParserError as e:
                     logging.debug(
                         f"Invalid timestamp content in '{timestamp_file}': {e}"
@@ -149,7 +146,7 @@ def get_from_to_dates(args, timestamp_file):
         # go until last minute of yesterday
         to_date = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
             hour=0, minute=0, second=0, microsecond=0
-        ) + timedelta(days=1, microseconds=-1)
+        ) + timedelta(days=1)
     return from_date, to_date
 
 
@@ -166,8 +163,9 @@ def generate_day_metrics(
     logging.info(f"Generate metrics from {period_start} to {period_end}")
     metrics = {}
     # pods ending in between the reporting times
+    count = 0
     for pod in VM.select().where(
-        (VM.end_time >= period_start) & (VM.end_time <= period_end)
+        (VM.end_time >= period_start) & (VM.end_time < period_end)
     ):
         update_pod_metric(
             pod,
@@ -176,11 +174,14 @@ def generate_day_metrics(
             period_start,
             period_end,
         )
+        count = count + 1
+    logging.debug(f"=> {count} pods")
 
     # pods starting but not finished between the reporting times
+    count = 0
     for pod in VM.select().where(
-        (VM.start_time <= period_end)
-        & (VM.end_time.is_null() | (VM.end_time > period_end))
+        (VM.start_time < period_end)
+        & (VM.end_time.is_null() | (VM.end_time >= period_end))
     ):
         update_pod_metric(
             pod,
@@ -189,8 +190,10 @@ def generate_day_metrics(
             period_start,
             period_end,
         )
+        count = count + 1
+    logging.debug(f"=> {count} pods")
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
-    period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
+    period_end_str = (period_end - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     for (user, group), flavors in metrics.items():
         for metric_key, value in flavors.items():
             metric_data = {
@@ -210,7 +213,10 @@ def generate_day_metrics(
     if not dry_run:
         try:
             with open(timestamp_file, "w+") as tsf:
-                tsf.write(period_end.strftime("%Y-%m-%dT%H:%M:%SZ"))
+                timestamp_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
+                logging.debug("Writing following timestamp to '{timestamp_file}': {timestamp_str}")
+                # we have open interval at the end => store the time just before the ending
+                tsf.write(timestamp_str)
         except OSError as e:
             e = str(e)
             logging.debug("Failed to write timestamp file '{timestamp_file}': {e}")
@@ -269,8 +275,8 @@ def main(argv=None):
     logging.debug(f"Reporting from {from_date} to {to_date}")
     # repeat in 24 hour intervals
     period_start = from_date
-    while period_start <= to_date:
-        period_end = period_start + timedelta(days=1, microseconds=-1)
+    while period_start < to_date:
+        period_end = period_start + timedelta(days=1)
         generate_day_metrics(
             period_start,
             period_end,
@@ -281,7 +287,7 @@ def main(argv=None):
             installation,
             args.dry_run,
         )
-        period_start = period_end + timedelta(microseconds=1)
+        period_start = period_end
 
 
 if __name__ == "__main__":
