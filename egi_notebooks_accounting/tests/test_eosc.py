@@ -116,14 +116,16 @@ def launch_eosc(
     # check results
     logging.info(f"HTTP requests history: {len(requests_mock.request_history)}")
     assert len(requests_mock.request_history) > 0, "any HTTP call has been made"
-    metrics_count = sum(v is not None and v != 0 for v in results)
+    metrics_count: int = sum(v is not None and v != 0 for v in results)
     # token is always asked, metrics are sent only when not zero
-    assert (
-        len(requests_mock.request_history) == len(results) + metrics_count
-    ), f"number of token requests is {len(results)} and pushed metrics is {metrics_count}"
+    hist_size: int = len(requests_mock.request_history)
+    results_size: int = len(results)
+    if hist_size != len(results) + metrics_count:
+        logging.error(f"Expected number of token requests {results_size}, pushed metrics {metrics_count}, but number of requests is {hist_size}")
     i = 1
     h: int = 0
     for result in results:
+        assert h < hist_size, f"missing {i}. report"
         # token
         captured = requests_mock.request_history[h]
         h = h + 1
@@ -131,6 +133,7 @@ def launch_eosc(
         if result is None or not result:
             continue
         # metrics
+        assert h < hist_size, f"missing {i}. report"
         captured = requests_mock.request_history[h]
         h = h + 1
         check_request(captured, accounting_metrics_url, f"{i}. captured")
