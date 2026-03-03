@@ -114,7 +114,8 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
     else:
         report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
 
-    user_metrics[flavor_metric] = (
+    flavor_metric_value = user_metrics.get(flavor_metric, 0)
+    user_metrics[flavor_metric] = flavor_metric_value + (
         report_end_time - report_start_time
     ).total_seconds() / (60 * 60)
 
