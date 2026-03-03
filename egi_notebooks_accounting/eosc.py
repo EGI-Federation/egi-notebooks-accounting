@@ -117,7 +117,7 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
     flavor_metric_value = user_metrics.get(flavor_metric, 0)
     user_metrics[flavor_metric] = flavor_metric_value + (
         report_end_time - report_start_time
-    ).total_seconds() / (60 * 60)
+    ).total_seconds()
 
 
 def get_from_to_dates(args, timestamp_file):
@@ -199,7 +199,8 @@ def generate_day_metrics(
                 "time_period_end": period_end_str,
                 "user_id": user,
                 "group_id": group,
-                "value": value,
+                # Need to convert to hours
+                "value": value / (60 * 60),
             }
             logging.debug(f"Sending metric {metric_data} to accounting")
             if dry_run:
