@@ -52,6 +52,7 @@ def launch_eosc(
     start_times: list[datetime] = [],
     wall_times: list[float] = [],
     results: list[float] = [],
+    interval: timedelta = timedelta(hours=24),
 ) -> None:
     """
     Launch eosc.py utility in mock mode and check the results.
@@ -75,6 +76,9 @@ def launch_eosc(
 
     :param results:
         Expected metric result for each interval (in hours), including zero metrics.
+
+    :params interval:
+        Interval between calls.
     """
     # pods into accounting database
     for i in range(0, len(start_times)):
@@ -104,7 +108,7 @@ def launch_eosc(
     for i in range(0, len(results)):
         with freeze_time(from_date):
             eosc.main(args)
-        from_date += timedelta(hours=24)
+        from_date += interval
 
     # check results
     logging.info(f"HTTP requests history: {len(requests_mock.request_history)}")
@@ -131,13 +135,41 @@ def launch_eosc(
         json = captured.json()
         assert json is not None, f"{i}. captured has a json body"
         assert "value" in json, f"{i}. captured has a value metric"
+        assert (
+            json["metric_definition_id"] == TestHelpers.flavor_metric
+        ), f"{i}. captured metric definition ID is {TestHelpers.flavor_metric}"
         assert json["value"] == result, f"{i}. captured metric has the expected value"
+        assert (
+            json["user_id"] == TestHelpers.USER
+        ), f"{i}. captured user is {TestHelpers.USER}"
+        assert (
+            json["group_id"] == TestHelpers.FQAN
+        ), f"{i}. captured group is {TestHelpers.FQAN}"
+        assert "time_period_start" in json, f"{i}. captured has a period start time"
+        assert "time_period_end" in json, f"{i}. captured has a period end time"
+        period_start: datetime = dateutil.parser.parse(json["time_period_start"])
+        assert (
+            period_start.hour == 0
+            and period_start.minute == 0
+            and period_start.second == 0
+            and period_start.microsecond == 0
+        ), f"{i}. captured has a period start at midnight"
+        period_end: datetime = dateutil.parser.parse(json["time_period_end"])
+        assert (
+            period_start.hour == 0
+            and period_start.year == period_end.year
+            and period_start.month == period_end.month
+            and period_start.day == period_end.day
+        ), f"{i}. captured has a period start and period with the same date"
+        assert (
+            period_end.hour == 23 and period_end.minute == 59
+        ), f"{i}. captured has a period end is late in the day"
         i = i + 1
 
 
 def test_basic(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Basic test with two pods inside the interval."""
-    from_date = dateutil.parser.parse("2026-02-28T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T13:00:00Z"),
         dateutil.parser.parse("2026-02-27T13:30:00Z"),
@@ -146,7 +178,7 @@ def test_basic(pytestconfig, requests_mock, delete_timestamp) -> None:
         3600,
         3600,
     ]
-    results: list[float] = [2.0]
+    results: list[float] = [0, 2.0, 0]
 
     launch_eosc(
         pytestconfig, requests_mock, from_date, start_times, wall_times, results
@@ -155,15 +187,55 @@ def test_basic(pytestconfig, requests_mock, delete_timestamp) -> None:
 
 def test_over(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Test with a pod between two intervals."""
-    from_date = dateutil.parser.parse("2026-02-28T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T23:00:00Z"),
     ]
     wall_times: list[float] = [
         2 * 3600,
     ]
-    results: list[float] = [0, 2.0]
+    results: list[float] = [0, 0, 2.0, 0]
 
     launch_eosc(
         pytestconfig, requests_mock, from_date, start_times, wall_times, results
+    )
+
+
+def test_broad(pytestconfig, requests_mock, delete_timestamp) -> None:
+    """Test with a long pod across multiple intervals."""
+    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    start_times: list[datetime] = [
+        dateutil.parser.parse("2026-02-27T23:00:00Z"),
+    ]
+    wall_times: list[float] = [
+        3 * 24 * 3600,
+    ]
+    results: list[float] = [0, 0, 0, 0, 3 * 24, 0]
+
+    launch_eosc(
+        pytestconfig, requests_mock, from_date, start_times, wall_times, results
+    )
+
+
+def test_dupla(pytestconfig, requests_mock, delete_timestamp) -> None:
+    """Test with two pods inside the interval and duplicated metric push call."""
+    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    start_times: list[datetime] = [
+        dateutil.parser.parse("2026-02-27T13:00:00Z"),
+        dateutil.parser.parse("2026-02-27T13:30:00Z"),
+    ]
+    wall_times: list[float] = [
+        3600,
+        3600,
+    ]
+    results: list[float] = [0, 0, 2.0, 0, 0, 0]
+
+    launch_eosc(
+        pytestconfig,
+        requests_mock,
+        from_date,
+        start_times,
+        wall_times,
+        results,
+        interval=timedelta(hours=12),
     )

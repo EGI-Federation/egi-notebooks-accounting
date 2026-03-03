@@ -26,6 +26,7 @@ def pytest_configure(config):
     config.config_file = config_file
     config.db_file: str = config.config.get("notebooks_db")
     TestHelpers.flavor_name = list(config.flavor_config.keys())[0]
+    TestHelpers.flavor_metric = list(config.flavor_config.values())[0]
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -47,6 +48,10 @@ def truncate(db):
 
 class TestHelpers:
     flavor_name = None
+    flavor_metric = None
+    LUSER = "ltuser"
+    USER = "gtuser"
+    FQAN = "tsuite"
 
     @staticmethod
     def pod(i: int, start_time: datetime, wall: float | None) -> VM:
@@ -75,9 +80,9 @@ class TestHelpers:
         return VM.create(
             local_id=local_id,
             machine=f"machine{i}",
-            local_user_id="ltuser",
-            global_user_name="gtuser",
-            fqan="tsuite",
+            local_user_id=TestHelpers.LUSER,
+            global_user_name=TestHelpers.USER,
+            fqan=TestHelpers.FQAN,
             namespace="testsuite",
             start_time=start_time,
             end_time=end_time,
