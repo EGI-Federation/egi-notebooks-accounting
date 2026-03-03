@@ -171,7 +171,7 @@ def launch_eosc(
         ), f"{i}. captured has a period start and period with the same date"
         assert (
             period_end.hour == 23 and period_end.minute == 59
-        ), f"{i}. captured has a period end is late in the day"
+        ), f"{i}. captured has a period end in the late part of the day"
         i = i + 1
 
 
