@@ -1,5 +1,4 @@
 dirq
 peewee
 python-dateutil
-pytz
 requests

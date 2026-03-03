@@ -51,10 +51,9 @@ import json
 import logging
 import os
 from configparser import ConfigParser
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import dateutil.parser
-import pytz
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -103,17 +102,21 @@ def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
     flavor_metric = flavor_config[pod.flavor]
     metrics[(user, group)] = user_metrics
 
-    if pod.start_time.is_null():
+    if pod.start_time is None:
         report_start_time = period_start
     else:
-        report_start_time = max(period_start, pod.start_time)
+        report_start_time = max(
+            period_start, pod.start_time.replace(tzinfo=timezone.utc)
+        )
 
-    if pod.end_time.is_null():
+    if pod.end_time is None:
         report_end_time = period_end
     else:
-        report_end_time = min(period_end, pod.end_time)
+        report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
 
-    user_metrics[flavor_metric] = report_end_time - report_start_time
+    user_metrics[flavor_metric] = (
+        report_end_time - report_start_time
+    ).total_seconds() / (60 * 60)
 
 
 def get_from_to_dates(args, timestamp_file):
@@ -125,7 +128,9 @@ def get_from_to_dates(args, timestamp_file):
             with open(timestamp_file, "r") as tsf:
                 try:
                     from_date = dateutil.parser.parse(tsf.read())
-                    from_date += timedelta(minutes=1)
+                    from_date = (from_date + timedelta(minutes=1)).replace(
+                        hour=0, minute=0, second=0, microsecond=0
+                    )
                 except dateutil.parser.ParserError as e:
                     logging.debug(
                         f"Invalid timestamp content in '{timestamp_file}': {e}"
@@ -134,19 +139,16 @@ def get_from_to_dates(args, timestamp_file):
             logging.debug(f"Not able to open timestamp file '{timestamp_file}': {e}")
         # no date specified report from yesterday
         if not from_date:
-            report_day = date.today() - timedelta(days=1)
-            from_date = datetime(
-                report_day.year, report_day.month, report_day.day, 0, 0
+            from_date = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
+                hour=0, minute=0, second=0, microsecond=0
             )
     if args.to_date:
         to_date = dateutil.parser.parse(args.to_date)
     else:
         # go until last minute of yesterday
-        report_day = date.today() - timedelta(days=1)
-        to_date = report_day + timedelta(days=1, microseconds=-1)
-    utc = pytz.UTC
-    from_date = from_date.replace(tzinfo=utc)
-    to_date = to_date.replace(tzinfo=utc)
+        to_date = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) + timedelta(days=1, microseconds=-1)
     return from_date, to_date
 
 
