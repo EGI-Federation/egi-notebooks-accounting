@@ -1,4 +1,4 @@
 dirq
-peewee
+peewee>=4
 python-dateutil
 requests
