@@ -172,7 +172,7 @@ def launch_eosc(
 
 def test_basic(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Basic test with two pods inside the interval."""
-    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:10:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T13:00:00Z"),
         dateutil.parser.parse("2026-02-27T13:30:00Z"),
@@ -190,7 +190,7 @@ def test_basic(pytestconfig, requests_mock, delete_timestamp) -> None:
 
 def test_over(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Test with a pod between two intervals."""
-    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:10:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T23:00:00Z"),
     ]
@@ -207,7 +207,7 @@ def test_over(pytestconfig, requests_mock, delete_timestamp) -> None:
 
 def test_broad(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Test with a long pod across multiple intervals."""
-    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:10:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T23:00:00Z"),
     ]
@@ -231,7 +231,7 @@ def test_broad(pytestconfig, requests_mock, delete_timestamp) -> None:
 
 def test_dupla(pytestconfig, requests_mock, delete_timestamp) -> None:
     """Test with two pods inside the interval and duplicated metric push call."""
-    from_date = dateutil.parser.parse("2026-02-27T00:00:00Z")
+    from_date = dateutil.parser.parse("2026-02-27T00:10:00Z")
     start_times: list[datetime] = [
         dateutil.parser.parse("2026-02-27T13:00:00Z"),
         dateutil.parser.parse("2026-02-27T13:30:00Z"),
