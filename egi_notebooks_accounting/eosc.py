@@ -193,7 +193,7 @@ def generate_day_metrics(
         count = count + 1
     logging.debug(f"=> {count} pods")
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
-    period_end_str = (period_end - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
     for (user, group), flavors in metrics.items():
         for metric_key, value in flavors.items():
             metric_data = {
