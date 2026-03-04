@@ -214,7 +214,9 @@ def generate_day_metrics(
         try:
             with open(timestamp_file, "w+") as tsf:
                 timestamp_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
-                logging.debug(f"Writing following timestamp to '{timestamp_file}': {timestamp_str}")
+                logging.debug(
+                    f"Writing following timestamp to '{timestamp_file}': {timestamp_str}"
+                )
                 # we have open interval at the end => store the time just before the ending
                 tsf.write(timestamp_str)
         except OSError as e:
