@@ -144,9 +144,9 @@ def get_from_to_dates(args, timestamp_file):
         to_date = dateutil.parser.parse(args.to_date)
     else:
         # go until last minute of yesterday
-        to_date = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
+        to_date = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
-        ) + timedelta(days=1)
+        )
     return from_date, to_date
 
 
