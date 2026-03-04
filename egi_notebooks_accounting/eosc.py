@@ -143,7 +143,7 @@ def get_from_to_dates(args, timestamp_file):
     if args.to_date:
         to_date = dateutil.parser.parse(args.to_date)
     else:
-        # go until last minute of yesterday
+        # go until the very beginning of today
         to_date = datetime.now(timezone.utc).replace(
             hour=0, minute=0, second=0, microsecond=0
         )
@@ -175,7 +175,7 @@ def generate_day_metrics(
             period_end,
         )
         count = count + 1
-    logging.debug(f"=> {count} pods")
+    logging.debug(f"=> {count} pods ending in between the reporting times")
 
     # pods starting but not finished between the reporting times
     count = 0
@@ -191,7 +191,7 @@ def generate_day_metrics(
             period_end,
         )
         count = count + 1
-    logging.debug(f"=> {count} pods")
+    logging.debug(f"=> {count} pods starting but not finished between the reporting times")
     period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
     period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
     for (user, group), flavors in metrics.items():
