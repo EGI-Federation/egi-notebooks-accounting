@@ -60,8 +60,6 @@ Example (multiple values per FQAN possible, separated by comma):
 
 ## Unit tests
 
-In _egi\_notebooks\_accounting_.
-
 Launch:
 
     pytest
