@@ -88,6 +88,9 @@ data:
     {{- if .Values.eosc.installationId }}
     installation_id={{ .Values.eosc.installationId }}
     {{- end }}
+    {{- if .Values.eosc.timeout }}
+    timeout={{ .Values.eosc.timeout }}
+    {{- end }}
     {{- if .Values.storage.timestamp }}
     timestamp_file={{ .Values.storage.timestamp }}
     {{- end }}

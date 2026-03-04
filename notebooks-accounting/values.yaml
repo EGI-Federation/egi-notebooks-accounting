@@ -70,6 +70,7 @@ eosc:
   clientSecret:
   accountingUrl:
   installationId:
+  timeout: 120
   flavorMetrics: {}
 
 # APEL sender parameters

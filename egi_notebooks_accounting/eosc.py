@@ -37,6 +37,7 @@ client_secret=<client secret>
 client_id=<client_id>
 accounting_url=https://api.acc.staging.eosc.grnet.gr
 installation_id=<id of the installation to report accounting for>
+timeout=120
 timestamp_file=<file where the timestamp of the last run is kept>
 
 [eosc.flavors]
@@ -68,7 +69,7 @@ DEFAULT_ACCOUNTING_URL = "https://api.acc.staging.eosc.grnet.gr"
 DEFAULT_TIMESTAMP_FILE = "eosc-accounting.timestamp"
 
 
-def get_access_token(token_url, client_id, client_secret):
+def get_access_token(token_url, client_id, client_secret, timeout=None):
     response = requests.post(
         token_url,
         auth=HTTPBasicAuth(client_id, client_secret),
@@ -78,16 +79,18 @@ def get_access_token(token_url, client_id, client_secret):
             "client_id": client_id,
             "client_secret": client_secret,
         },
+        timeout=timeout,
     )
     return response.json()["access_token"]
 
 
-def push_metric(accounting_url, token, installation, metric_data):
+def push_metric(accounting_url, token, installation, metric_data, timeout=None):
     logging.debug(f"Pushing to accounting - {installation}")
     response = requests.post(
         f"{accounting_url}/accounting-system/installations/{installation}/metrics",
         headers={"Authorization": f"Bearer {token}"},
         data=json.dumps(metric_data),
+        timeout=timeout,
     )
     response.raise_for_status()
 
@@ -159,6 +162,7 @@ def generate_day_metrics(
     timestamp_file,
     installation,
     dry_run,
+    timeout=None,
 ):
     logging.info(f"Generate metrics from {period_start} to {period_end}")
     metrics = {}
@@ -209,7 +213,7 @@ def generate_day_metrics(
             if dry_run:
                 logging.debug("Dry run, not sending")
             else:
-                push_metric(accounting_url, token, installation, metric_data)
+                push_metric(accounting_url, token, installation, metric_data, timeout)
     if not dry_run:
         try:
             with open(timestamp_file, "w+") as tsf:
@@ -257,11 +261,12 @@ def main(argv=None):
     client_secret = os.environ.get(
         "CLIENT_SECRET", eosc_config.get("client_secret", "")
     )
+    timeout = eosc_config.get("timeout", None)
     if args.dry_run:
         logging.debug("Not getting credentials, dry-run")
         token = None
     else:
-        token = get_access_token(token_url, client_id, client_secret)
+        token = get_access_token(token_url, client_id, client_secret, timeout)
 
     accounting_url = os.environ.get(
         "ACCOUNTING_URL", eosc_config.get("accounting_url", DEFAULT_ACCOUNTING_URL)
@@ -288,6 +293,7 @@ def main(argv=None):
             timestamp_file,
             installation,
             args.dry_run,
+            timeout,
         )
         period_start = period_end
 
