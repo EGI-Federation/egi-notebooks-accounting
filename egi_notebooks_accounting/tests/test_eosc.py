@@ -43,6 +43,7 @@ def check_request(captured, url: str, message: str) -> None:
     logging.info(f"{message} HTTP call: {captured.method} {captured.url}")
     assert captured.method == "POST", f"{message} method is POST"
     assert captured.url == url, f"{message} URL is {url}"
+    assert type(captured.timeout) is int, "timeout is of int type"
 
 
 def launch_eosc(
