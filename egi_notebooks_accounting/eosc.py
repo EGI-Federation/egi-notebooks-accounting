@@ -264,6 +264,8 @@ def main(argv=None):
         "CLIENT_SECRET", eosc_config.get("client_secret", "")
     )
     timeout = eosc_config.get("timeout", None)
+    if timeout is not None:
+        timeout = int(timeout)
     if args.dry_run:
         logging.debug("Not getting credentials, dry-run")
         token = None
