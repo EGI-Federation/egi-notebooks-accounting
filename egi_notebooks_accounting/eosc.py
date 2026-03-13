@@ -27,279 +27,159 @@ with a JSON like:
 This code goes to the accounting db and aggregates the information for the last 24 hours
 and pushes it to the EOSC Accounting
 
-Configuration:
+Configuration (default and aai sections are common from recordpusher.py):
+```
 [default]
 notebooks_db=<notebooks db file>
+timeout=120
+timestamp_file=<file where the timestamp of the last run is kept>
 
-[eosc]
+[aai]
 token_url=https://proxy.staging.eosc-federation.eu/OIDC/token
 client_secret=<client secret>
 client_id=<client_id>
+scope=<scopes>
+
+[eosc]
 accounting_url=https://api.acc.staging.eosc.grnet.gr
 installation_id=<id of the installation to report accounting for>
-timeout=120
-timestamp_file=<file where the timestamp of the last run is kept>
 
 [eosc.flavors]
 # contains a list of flavors and metrics they are mapped to
 <name of the flavor>=<metric id>
 # example:
 small-environment-2-vcpu-4-gb-ram=668bdd5988e1d617b217ecb9
+```
 """
 
-import argparse
-import json
 import logging
+import json
 import os
-from configparser import ConfigParser
-from datetime import datetime, timedelta, timezone
+from datetime import timezone
 
-import dateutil.parser
 import requests
-from requests.auth import HTTPBasicAuth
 
-from .model import VM, db_init
+from .model import VM
+from .recordpusher import RecordPusher
 
-CONFIG = "default"
 EOSC_CONFIG = "eosc"
 FLAVOR_CONFIG = "eosc.flavors"
-DEFAULT_CONFIG_FILE = "config.ini"
-DEFAULT_TOKEN_URL = "https://proxy.staging.eosc-federation.eu/OIDC/token"
 DEFAULT_ACCOUNTING_URL = "https://api.acc.staging.eosc.grnet.gr"
 DEFAULT_TIMESTAMP_FILE = "eosc-accounting.timestamp"
+DEFAULT_TOKEN_URL = "https://proxy.staging.eosc-federation.eu/OIDC/token"
+DEFAULT_SCOPE = "openid email profile voperson_id entitlements"
 
 
-def get_access_token(token_url, client_id, client_secret, timeout=None):
-    response = requests.post(
-        token_url,
-        auth=HTTPBasicAuth(client_id, client_secret),
-        data={
-            "grant_type": "client_credentials",
-            "scope": "openid email profile voperson_id entitlements",
-            "client_id": client_id,
-            "client_secret": client_secret,
-        },
-        timeout=timeout,
-    )
-    return response.json()["access_token"]
+class EOSCRecordPusher(RecordPusher):
+    description = "EOSC Accounting metric pusher"
+    default_token_url = DEFAULT_TOKEN_URL
+    default_timestamp_file = DEFAULT_TIMESTAMP_FILE
+    default_scope = DEFAULT_SCOPE
 
+    def configure(self, config_file):
+        # common values from super
+        parser = super().configure(config_file)
+        eosc_config = parser[EOSC_CONFIG] if EOSC_CONFIG in parser else {}
 
-def push_metric(accounting_url, token, installation, metric_data, timeout=None):
-    logging.debug(f"Pushing to accounting - {installation}")
-    response = requests.post(
-        f"{accounting_url}/accounting-system/installations/{installation}/metrics",
-        headers={"Authorization": f"Bearer {token}"},
-        data=json.dumps(metric_data),
-        timeout=timeout,
-    )
-    response.raise_for_status()
-
-
-def update_pod_metric(pod, metrics, flavor_config, period_start, period_end):
-    if not pod.flavor or pod.flavor not in flavor_config:
-        # cannot report
-        logging.debug(f"Flavor {pod.flavor} does not have a configured metric")
-        return
-    user, group = (pod.global_user_name, pod.fqan)
-    user_metrics = metrics.get((user, group), {})
-    flavor_metric = flavor_config[pod.flavor]
-    metrics[(user, group)] = user_metrics
-
-    if pod.start_time is None:
-        report_start_time = period_start
-    else:
-        report_start_time = max(
-            period_start, pod.start_time.replace(tzinfo=timezone.utc)
+        # EOSC accounting config
+        self.accounting_url = os.environ.get(
+            "ACCOUNTING_URL", eosc_config.get("accounting_url", DEFAULT_ACCOUNTING_URL)
         )
+        self.installation = eosc_config.get("installation_id", "")
+        # Flavors config
+        self.flavor_config = parser[FLAVOR_CONFIG] if FLAVOR_CONFIG in parser else {}
 
-    if pod.end_time is None:
-        report_end_time = period_end
-    else:
-        report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
-
-    flavor_metric_value = user_metrics.get(flavor_metric, 0)
-    user_metrics[flavor_metric] = (
-        flavor_metric_value + (report_end_time - report_start_time).total_seconds()
-    )
-
-
-def get_from_to_dates(args, timestamp_file):
-    from_date = None
-    if args.from_date:
-        from_date = dateutil.parser.parse(args.from_date)
-    else:
-        try:
-            with open(timestamp_file, "r") as tsf:
-                try:
-                    from_date = dateutil.parser.parse(tsf.read())
-                except dateutil.parser.ParserError as e:
-                    logging.debug(
-                        f"Invalid timestamp content in '{timestamp_file}': {e}"
-                    )
-        except OSError as e:
-            logging.debug(f"Not able to open timestamp file '{timestamp_file}': {e}")
-        # no date specified report from yesterday
-        if not from_date:
-            from_date = (datetime.now(timezone.utc) - timedelta(days=1)).replace(
-                hour=0, minute=0, second=0, microsecond=0
+    def push_metric(self, metric_data):
+        if self.dry_run:
+            logging.debug("Dry run, not sending")
+        else:
+            logging.debug(f"Pushing to accounting - {self.installation}")
+            response = requests.post(
+                f"{self.accounting_url}/accounting-system/installations/{self.installation}/metrics",
+                headers={"Authorization": f"Bearer {self.token}"},
+                data=json.dumps(metric_data),
+                timeout=self.timeout,
             )
-    if args.to_date:
-        to_date = dateutil.parser.parse(args.to_date)
-    else:
-        # go until the very beginning of today
-        to_date = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-    return from_date, to_date
+            response.raise_for_status()
 
+    def update_pod_metric(self, pod, metrics, period_start, period_end):
+        if not pod.flavor or pod.flavor not in self.flavor_config:
+            # cannot report
+            logging.debug(f"Flavor {pod.flavor} does not have a configured metric")
+            return
+        user, group = (pod.global_user_name, pod.fqan)
+        user_metrics = metrics.get((user, group), {})
+        flavor_metric = self.flavor_config[pod.flavor]
+        metrics[(user, group)] = user_metrics
 
-def generate_day_metrics(
-    period_start,
-    period_end,
-    accounting_url,
-    token,
-    flavor_config,
-    timestamp_file,
-    installation,
-    dry_run,
-    timeout=None,
-):
-    logging.info(f"Generate metrics from {period_start} to {period_end}")
-    metrics = {}
-    # pods ending in between the reporting times
-    count = 0
-    for pod in VM.select().where(
-        (VM.end_time >= period_start) & (VM.end_time < period_end)
-    ):
-        update_pod_metric(
-            pod,
-            metrics,
-            flavor_config,
-            period_start,
-            period_end,
+        if pod.start_time is None:
+            report_start_time = period_start
+        else:
+            report_start_time = max(
+                period_start, pod.start_time.replace(tzinfo=timezone.utc)
+            )
+        if pod.end_time is None:
+            report_end_time = period_end
+        else:
+            report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
+        flavor_metric_value = user_metrics.get(flavor_metric, 0)
+        user_metrics[flavor_metric] = (
+            flavor_metric_value + (report_end_time - report_start_time).total_seconds()
         )
-        count = count + 1
-    logging.debug(f"=> {count} pods ending in between the reporting times")
 
-    # pods starting but not finished between the reporting times
-    count = 0
-    for pod in VM.select().where(
-        (VM.start_time < period_end)
-        & (VM.end_time.is_null() | (VM.end_time >= period_end))
-    ):
-        update_pod_metric(
-            pod,
-            metrics,
-            flavor_config,
-            period_start,
-            period_end,
+    def generate_day_metrics(self, period_start, period_end):
+        logging.info(f"Generate metrics from {period_start} to {period_end}")
+        metrics = {}
+        # pods ending in between the reporting times
+        count = 0
+        for pod in VM.select().where(
+            (VM.end_time >= period_start) & (VM.end_time < period_end)
+        ):
+            self.update_pod_metric(
+                pod,
+                metrics,
+                period_start,
+                period_end,
+            )
+            count = count + 1
+        logging.debug(f"=> {count} pods ending in between the reporting times")
+
+        # pods starting but not finished between the reporting times
+        count = 0
+        for pod in VM.select().where(
+            (VM.start_time < period_end)
+            & (VM.end_time.is_null() | (VM.end_time >= period_end))
+        ):
+            self.update_pod_metric(
+                pod,
+                metrics,
+                period_start,
+                period_end,
+            )
+            count = count + 1
+        logging.debug(
+            f"=> {count} pods starting but not finished between the reporting times"
         )
-        count = count + 1
-    logging.debug(
-        f"=> {count} pods starting but not finished between the reporting times"
-    )
-    period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
-    period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
-    for (user, group), flavors in metrics.items():
-        for metric_key, value in flavors.items():
-            metric_data = {
-                "metric_definition_id": metric_key,
-                "time_period_start": period_start_str,
-                "time_period_end": period_end_str,
-                "user_id": user,
-                "group_id": group,
-                # Need to convert to hours
-                "value": value / (60 * 60),
-            }
-            logging.debug(f"Sending metric {metric_data} to accounting")
-            if dry_run:
-                logging.debug("Dry run, not sending")
-            else:
-                push_metric(accounting_url, token, installation, metric_data, timeout)
-    if not dry_run:
-        try:
-            with open(timestamp_file, "w+") as tsf:
-                timestamp_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
-                logging.debug(
-                    f"Writing following timestamp to '{timestamp_file}': {timestamp_str}"
-                )
-                # we have open interval at the end => store the time just before the ending
-                tsf.write(timestamp_str)
-        except OSError as e:
-            e = str(e)
-            logging.debug("Failed to write timestamp file '{timestamp_file}': {e}")
+        period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
+        period_end_str = period_end.strftime("%Y-%m-%dT%H:%M:%SZ")
+        for (user, group), flavors in metrics.items():
+            for metric_key, value in flavors.items():
+                metric_data = {
+                    "metric_definition_id": metric_key,
+                    "time_period_start": period_start_str,
+                    "time_period_end": period_end_str,
+                    "user_id": user,
+                    "group_id": group,
+                    # Need to convert to hours
+                    "value": value / (60 * 60),
+                }
+                logging.debug(f"Sending metric {metric_data} to accounting")
+                self.push_metric(metric_data)
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="EOSC Accounting metric pusher")
-    parser.add_argument(
-        "-c", "--config", help="config file", default=DEFAULT_CONFIG_FILE
-    )
-    parser.add_argument(
-        "--dry-run", help="Do not actually send data, just report", action="store_true"
-    )
-    parser.add_argument("--from-date", help="Start date to report from")
-    parser.add_argument("--to-date", help="End date to report to")
-    args = parser.parse_args(argv)
-
-    parser = ConfigParser()
-    parser.read(args.config)
-    config = parser[CONFIG] if CONFIG in parser else {}
-    eosc_config = parser[EOSC_CONFIG] if EOSC_CONFIG in parser else {}
-    flavor_config = parser[FLAVOR_CONFIG] if FLAVOR_CONFIG in parser else {}
-    db_file = os.environ.get("NOTEBOOKS_DB", config.get("notebooks_db", None))
-    db_init(db_file)
-
-    verbose = os.environ.get("VERBOSE", config.get("verbose", 0))
-    verbose = logging.DEBUG if verbose == "1" else logging.INFO
-    logging.basicConfig(level=verbose)
-
-    # EOSC accounting config
-    # AAI
-    token_url = os.environ.get(
-        "TOKEN_URL", eosc_config.get("token_url", DEFAULT_TOKEN_URL)
-    )
-    client_id = os.environ.get("CLIENT_ID", eosc_config.get("client_id", ""))
-    client_secret = os.environ.get(
-        "CLIENT_SECRET", eosc_config.get("client_secret", "")
-    )
-    timeout = eosc_config.get("timeout", None)
-    if timeout is not None:
-        timeout = int(timeout)
-    if args.dry_run:
-        logging.debug("Not getting credentials, dry-run")
-        token = None
-    else:
-        token = get_access_token(token_url, client_id, client_secret, timeout)
-
-    accounting_url = os.environ.get(
-        "ACCOUNTING_URL", eosc_config.get("accounting_url", DEFAULT_ACCOUNTING_URL)
-    )
-    installation = eosc_config.get("installation_id", "")
-
-    timestamp_file = os.environ.get(
-        "TIMESTAMP_FILE", eosc_config.get("timestamp_file", DEFAULT_TIMESTAMP_FILE)
-    )
-
-    # ==== queries ====
-    from_date, to_date = get_from_to_dates(args, timestamp_file)
-    logging.debug(f"Reporting from {from_date} to {to_date}")
-    # repeat in 24 hour intervals
-    period_start = from_date
-    while period_start < to_date:
-        period_end = period_start + timedelta(days=1)
-        generate_day_metrics(
-            period_start,
-            period_end,
-            accounting_url,
-            token,
-            flavor_config,
-            timestamp_file,
-            installation,
-            args.dry_run,
-            timeout,
-        )
-        period_start = period_end
+    pusher = EOSCRecordPusher()
+    pusher.run(argv)
 
 
 if __name__ == "__main__":
