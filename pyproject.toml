@@ -24,6 +24,7 @@ classifiers = [
 [project.scripts]
 egi-notebooks-accounting-dump = "egi_notebooks_accounting.pods:main"
 egi-notebooks-eosc-accounting = "egi_notebooks_accounting.eosc:main"
+egi-notebooks-d4science-accounting = "egi_notebooks_accounting.d4science:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
