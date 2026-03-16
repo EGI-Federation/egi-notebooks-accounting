@@ -82,16 +82,15 @@ class D4ScienceRecordPusher(RecordPusher):
             d4science_config.get("accounting_url", DEFAULT_ACCOUNTING_URL),
         )
 
-    def push_record(self, record):
-        logging.debug(f"Pushing {record['id']} to accounting")
+    def push_records(self, records):
+        logging.debug(f"Pushing {len(records)} to accounting")
         if self.dry_run:
             logging.debug("Dry run, not sending")
-            logging.debug(record)
             return
         response = requests.post(
             f"{self.accounting_url}/",
             headers={"Authorization": f"Bearer {self.token}"},
-            data=json.dumps(record),
+            data=json.dumps(records),
             timeout=self.timeout,
         )
         response.raise_for_status()
@@ -150,7 +149,7 @@ class D4ScienceRecordPusher(RecordPusher):
             "creationTime": int(pod.start_time.timestamp() * 1000),
             "operationResult": "SUCCESS",
         }
-        print(service_class)
+        loggin.debug(f"Generated record: {record}")
         return record
 
     def generate_day_metrics(self, period_start, period_end):
@@ -164,8 +163,7 @@ class D4ScienceRecordPusher(RecordPusher):
         logging.debug(
             f"=> {len(records)} records for pods ending in between the reporting times"
         )
-        for rec in records:
-            self.push_record(rec)
+        self.push_records(records)
 
 
 def main(argv=None):
