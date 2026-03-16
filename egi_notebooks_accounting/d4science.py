@@ -149,7 +149,7 @@ class D4ScienceRecordPusher(RecordPusher):
             "creationTime": int(pod.start_time.timestamp() * 1000),
             "operationResult": "SUCCESS",
         }
-        loggin.debug(f"Generated record: {record}")
+        logging.debug(f"Generated record: {record}")
         return record
 
     def generate_day_metrics(self, period_start, period_end):

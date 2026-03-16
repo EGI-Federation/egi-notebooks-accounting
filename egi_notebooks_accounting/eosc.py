@@ -52,8 +52,8 @@ small-environment-2-vcpu-4-gb-ram=668bdd5988e1d617b217ecb9
 ```
 """
 
-import logging
 import json
+import logging
 import os
 from datetime import timezone
 
