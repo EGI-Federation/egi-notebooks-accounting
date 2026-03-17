@@ -40,6 +40,8 @@ Configuration:
 notebooks_db=<notebooks db file>
 timestamp_file=<file where the timestamp of the last run is kept>
 timeout=120
+flavor_annotation=hub.jupyter.org/servername
+group_annotation=d4science_context
 
 [aai]
 token_url=https://proxy.staging.eosc-federation.eu/OIDC/token
@@ -57,7 +59,6 @@ import logging
 import os
 from datetime import timezone
 
-import escapism
 import requests
 
 from .model import VM
@@ -126,9 +127,9 @@ class D4ScienceRecordPusher(RecordPusher):
         # maxInvocationTime
         service_class = "Jupyter"
         service_name = "Jupyter"
-        split_machine = pod.machine.split("--rname-2d", 1)
-        if len(split_machine) > 1:
-            service_class = escapism.unescape(split_machine[1], escape_char="-")
+        split_flavor = pod.flavor.split("rname-", 1)
+        if len(split_flavor) > 1:
+            service_class = split_flavor[1]
         record = {
             "recordType": "JobUsageRecord",
             "jobName": str(pod.local_id),  # XXX is this one ok?
@@ -138,8 +139,8 @@ class D4ScienceRecordPusher(RecordPusher):
             "consumerId": pod.global_user_name,
             "aggregated": True,
             "serviceName": service_name,
-            "scope": pod.fqan,
-            "host": "jupyterhub.d4science.org",  #
+            "scope": pod.primary_group,
+            "host": "jupyterhub.d4science.org",  # where this comes from?
             "id": str(pod.local_id),
             "duration": int(pod.wall),
             # these are in miliseconds

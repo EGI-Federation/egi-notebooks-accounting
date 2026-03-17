@@ -19,6 +19,8 @@ DEFAULT_FILTER = "pod=~'jupyter-.*'"
 DEFAULT_FQANS: Dict[str, List[str]] = {}
 DEFAULT_FQAN_KEY = "primary_group"
 DEFAULT_RANGE = "24h"
+DEFAULT_GROUP_ANNOTATION = "egi.eu/primary_group"
+DEFAULT_FLAVOR_ANNOTATION = "egi.eu/flavor"
 
 
 def main():
@@ -39,6 +41,12 @@ def main():
     logging.basicConfig(level=verbose)
     fqan_key = os.environ.get("FQAN_KEY", config.get("fqan_key", DEFAULT_FQAN_KEY))
     spool_dir = os.environ.get("APEL_SPOOL", config.get("apel_spool"))
+
+    # Annotations
+    group_annotation = os.environ("GROUP_ANNOTATION", config.get("group_annotation", DEFAULT_GROUP_ANNOTATION))
+    group_annotation_metric = f'annotation_.{group_annotation.replace(".", "_").replace("/", "_")}'
+    flavor_annotation = os.environ("FLAVOR_ANNOTATION", config.get("flavor_annotation", DEFAULT_FLAVOR_ANNOTATION))
+    flavor_annotation_metric = f'annotation_.{flavor_annotation.replace(".", "_").replace("/", "_")}'
 
     prom_config = parser[PROM_CONFIG] if PROM_CONFIG in parser else {}
     flt = os.environ.get("FILTER", prom_config.get("filter", DEFAULT_FILTER))
@@ -135,6 +143,8 @@ def main():
                 pod.end_time = pod.start_time
                 pod.status = "completed"
     # ==== USER ====
+
+
     data["query"] = "last_over_time(kube_pod_annotations{" + flt + "}[" + rng + "])"
     response = prom.query(data)
     for item in response["data"]["result"]:
@@ -149,8 +159,8 @@ def main():
             )
             continue
         pod.global_user_name = metric.get("annotation_hub_jupyter_org_username", None)
-        pod.primary_group = metric.get("annotation_egi_eu_primary_group", None)
-        pod.flavor = metric.get("annotation_egi_eu_flavor", None)
+        pod.primary_group = metric.get(group_annotation_metric, None)
+        pod.flavor = metric.get(flavor_annotation_metric, None)
     # ==== IMAGE ====
     data["query"] = (
         "last_over_time(kube_pod_container_info{"

@@ -1,4 +1,3 @@
-escapism
 dirq
 peewee>=4
 python-dateutil
