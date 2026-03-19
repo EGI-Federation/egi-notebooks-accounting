@@ -166,8 +166,12 @@ def main():
             )
             continue
         pod.global_user_name = metric.get("annotation_hub_jupyter_org_username", None)
-        pod.primary_group = metric.get(group_annotation_metric, None)
-        pod.flavor = metric.get(flavor_annotation_metric, None)
+        primary_group = metric.get(group_annotation_metric, None)
+        if primary_group:
+            pod.primary_group = primary_group
+        flavor = metric.get(flavor_annotation_metric, None)
+        if flavor:
+            pod.flavor = flavor
     # ==== IMAGE ====
     data["query"] = (
         "last_over_time(kube_pod_container_info{"

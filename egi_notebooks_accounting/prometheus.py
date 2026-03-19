@@ -80,8 +80,8 @@ class Prometheus:
         if key in self.pods:
             return self.pods[key]
         if default is not None:
-            self.pods[key] = default
             default.local_id = key
+            self.pods[key] = default
             return default
         return None
 
