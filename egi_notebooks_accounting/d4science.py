@@ -127,9 +127,10 @@ class D4ScienceRecordPusher(RecordPusher):
         # maxInvocationTime
         service_class = "Jupyter"
         service_name = "Jupyter"
-        split_flavor = pod.flavor.split("rname-", 1)
-        if len(split_flavor) > 1:
-            service_class = split_flavor[1]
+        if pod.flavor:
+            split_flavor = pod.flavor.split("rname-", 1)
+            if len(split_flavor) > 1:
+                service_class = split_flavor[1]
         record = {
             "recordType": "JobUsageRecord",
             "jobName": str(pod.local_id),  # XXX is this one ok?
