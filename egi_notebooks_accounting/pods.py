@@ -44,9 +44,9 @@ def main():
 
     # Annotations
     group_annotation = os.environ("GROUP_ANNOTATION", config.get("group_annotation", DEFAULT_GROUP_ANNOTATION))
-    group_annotation_metric = f'annotation_.{group_annotation.replace(".", "_").replace("/", "_")}'
+    group_annotation_metric = f'annotation_{group_annotation.replace(".", "_").replace("/", "_")}'
     flavor_annotation = os.environ("FLAVOR_ANNOTATION", config.get("flavor_annotation", DEFAULT_FLAVOR_ANNOTATION))
-    flavor_annotation_metric = f'annotation_.{flavor_annotation.replace(".", "_").replace("/", "_")}'
+    flavor_annotation_metric = f'annotation_{flavor_annotation.replace(".", "_").replace("/", "_")}'
 
     prom_config = parser[PROM_CONFIG] if PROM_CONFIG in parser else {}
     flt = os.environ.get("FILTER", prom_config.get("filter", DEFAULT_FILTER))
