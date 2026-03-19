@@ -201,7 +201,11 @@ def main():
                 # dirty hack: parse POD uid from "name" label
                 if "name" not in item["metric"]:
                     continue
-                uid = item["metric"]["name"].split("_")[-2]
+                try:
+                    uid = item["metric"]["name"].split("_")[-2]
+                except IndexError:
+                    # not matching the expected format, ignore
+                    pass
             pod = prom.get_pod(item, uid)
             metric = item["metric"]
             if pod is None:
