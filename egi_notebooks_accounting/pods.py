@@ -43,13 +43,13 @@ def main():
     spool_dir = os.environ.get("APEL_SPOOL", config.get("apel_spool"))
 
     # Annotations
-    group_annotation = os.environ(
+    group_annotation = os.environ.get(
         "GROUP_ANNOTATION", config.get("group_annotation", DEFAULT_GROUP_ANNOTATION)
     )
     group_annotation_metric = (
         f'annotation_{group_annotation.replace(".", "_").replace("/", "_")}'
     )
-    flavor_annotation = os.environ(
+    flavor_annotation = os.environ.get(
         "FLAVOR_ANNOTATION", config.get("flavor_annotation", DEFAULT_FLAVOR_ANNOTATION)
     )
     flavor_annotation_metric = (
