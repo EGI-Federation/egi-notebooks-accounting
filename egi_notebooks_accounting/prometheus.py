@@ -70,7 +70,7 @@ class Prometheus:
     def get_pod(self, item, uid=None, default=None):
         if "metric" not in item or uid is None and "uid" not in item["metric"]:
             logging.error("missing metric or uid in metric")
-            sys.exit(1)
+            return None
         # expects only matrix or vector resultType
         if "values" not in item and "value" not in item:
             logging.error("missing value(s) in the result")
