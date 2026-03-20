@@ -52,6 +52,7 @@ scope=<scopes>
 
 [d4science]
 accounting_url=https://accounting-service.d4science.org/accounting-service/record
+host=jupyterhub.d4science.net
 """
 
 import json
@@ -82,6 +83,7 @@ class D4ScienceRecordPusher(RecordPusher):
             "ACCOUNTING_URL",
             d4science_config.get("accounting_url", DEFAULT_ACCOUNTING_URL),
         )
+        self.host = os.environ.get("D4SCIENCE_HOST", d4science_config.get("host", ""))
 
     def push_records(self, records):
         logging.debug(f"Pushing {len(records)} to accounting")
@@ -133,7 +135,8 @@ class D4ScienceRecordPusher(RecordPusher):
                 service_class = split_flavor[1]
         record = {
             "recordType": "JobUsageRecord",
-            "jobName": str(pod.local_id),  # XXX is this one ok?
+            # XXX is this one ok?
+            "jobName": str(pod.local_id),
             "operationCount": 1,
             "serviceClass": service_class,
             "callerQualifier": "TOKEN",
@@ -141,7 +144,7 @@ class D4ScienceRecordPusher(RecordPusher):
             "aggregated": True,
             "serviceName": service_name,
             "scope": pod.primary_group,
-            "host": "jupyterhub.d4science.org",  # where this comes from?
+            "host": self.host,
             "id": str(pod.local_id),
             "duration": int(pod.wall),
             # these are in miliseconds
