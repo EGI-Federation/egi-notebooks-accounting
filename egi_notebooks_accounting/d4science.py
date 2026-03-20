@@ -60,6 +60,7 @@ import logging
 import os
 from datetime import timezone
 
+import escapism
 import requests
 
 from .model import VM
@@ -129,10 +130,18 @@ class D4ScienceRecordPusher(RecordPusher):
         # maxInvocationTime
         service_class = "Jupyter"
         service_name = "Jupyter"
-        if pod.flavor:
-            split_flavor = pod.flavor.split("rname-", 1)
-            if len(split_flavor) > 1:
-                service_class = split_flavor[1]
+        if not pod.flavor:
+            logging.debug("Skipping pod as it has no flavor")
+            return None
+        if pod.machine:
+            split_machine = pod.machine.split("rname", 1)
+            print(split_machine)
+            if len(split_machine) > 1:
+                service_class = (
+                    escapism.unescape(split_machine[1], escape_char="-")
+                    .removeprefix("-")
+                    .removesuffix("ServerOption")
+                )
         record = {
             "recordType": "JobUsageRecord",
             # XXX is this one ok?
@@ -164,7 +173,9 @@ class D4ScienceRecordPusher(RecordPusher):
         for pod in VM.select().where(
             (VM.end_time >= period_start) & (VM.end_time < period_end)
         ):
-            records.append(self.generate_record(pod))
+            record = self.generate_record(pod)
+            if record:
+                records.append(record)
         logging.debug(
             f"=> {len(records)} records for pods ending in between the reporting times"
         )
