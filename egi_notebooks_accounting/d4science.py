@@ -128,14 +128,13 @@ class D4ScienceRecordPusher(RecordPusher):
         # Fields that we are not considering right now:
         # minInvocationTime
         # maxInvocationTime
-        service_class = "Jupyter"
-        service_name = "Jupyter"
         if not pod.flavor:
             logging.debug("Skipping pod as it has no flavor")
             return None
+        service_name = "Jupyter"
+        service_class = "Jupyter"
         if pod.machine:
             split_machine = pod.machine.split("rname", 1)
-            print(split_machine)
             if len(split_machine) > 1:
                 service_class = (
                     escapism.unescape(split_machine[1], escape_char="-")
