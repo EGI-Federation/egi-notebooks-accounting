@@ -14,9 +14,10 @@ from .conftest import TestHelpers
 @pytest.fixture(scope="function")
 def delete_timestamp(pytestconfig):
     """Delete EOSC last report timestamp file."""
-    timestamp_file = pytestconfig.eosc_config.get(
+    timestamp_file = pytestconfig.config.get(
         "timestamp_file", eosc.DEFAULT_TIMESTAMP_FILE
     )
+    logging.info(f"Deleting timestamp file {timestamp_file}")
     Path.unlink(timestamp_file, missing_ok=True)
 
 
@@ -90,7 +91,7 @@ def launch_eosc(
         "accounting_url", eosc.DEFAULT_ACCOUNTING_URL
     )
     installation_id = pytestconfig.eosc_config["installation_id"]
-    token_url = pytestconfig.eosc_config.get("token_url", eosc.DEFAULT_TOKEN_URL)
+    token_url = pytestconfig.aai_config.get("token_url", eosc.DEFAULT_TOKEN_URL)
     accounting_metrics_url = (
         f"{accounting_url}/accounting-system/installations/{installation_id}/metrics"
     )
