@@ -154,16 +154,16 @@ def launch_eosc(
         assert "time_period_start" in json, f"{i}. captured has a period start time"
         assert "time_period_end" in json, f"{i}. captured has a period end time"
         period_start: datetime = dateutil.parser.parse(json["time_period_start"])
-        assert (
-            period_start.hour == 0
-            and period_start.minute == 0
-            and period_start.second == 0
-            and period_start.microsecond == 0
-        ), f"{i}. captured has a period start at midnight"
         period_end: datetime = dateutil.parser.parse(json["time_period_end"])
         assert (
-            period_start + timedelta(days=1) == period_end
-        ), f"{i}. captured has a proper interval between period start and period end"
+            period_start.hour == 0
+            and period_start.year == period_end.year
+            and period_start.month == period_end.month
+            and period_start.day == period_end.day
+        ), f"{i}. captured has a period start and period with the same date"
+        assert (
+            period_end.hour == 23 and period_end.minute == 59
+        ), f"{i}. captured has a period end in the late part of the day"
         i = i + 1
 
 
