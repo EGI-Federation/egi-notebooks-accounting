@@ -94,6 +94,10 @@ data:
     client_id={{ .Values.eosc.clientId }}
     {{- end }}
 
+    # D4Science
+    [d4science]
+
+
     # EOSC
     [eosc]
     {{- if .Values.eosc.accountingUrl }}
