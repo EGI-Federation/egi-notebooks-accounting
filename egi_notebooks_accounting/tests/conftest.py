@@ -20,6 +20,7 @@ def pytest_configure(config):
     parser.read(config_file)
     config.config: dict = parser["default"] if "default" in parser else {}
     config.eosc_config: dict = parser["eosc"] if "eosc" in parser else {}
+    config.aai_config: dict = parser["aai"] if "aai" in parser else {}
     config.flavor_config: dict = (
         parser["eosc.flavors"] if "eosc.flavors" in parser else {}
     )
