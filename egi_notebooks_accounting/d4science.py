@@ -106,6 +106,7 @@ class D4ScienceRecordPusher(RecordPusher):
             data=json.dumps(records),
             timeout=self.timeout,
         )
+        logging.debug(f"Response: {response.text}")
         response.raise_for_status()
 
     def update_pod_metric(self, pod, metrics, period_start, period_end):
