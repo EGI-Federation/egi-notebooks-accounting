@@ -170,7 +170,9 @@ class EOSCRecordPusher(RecordPusher):
             f"=> {count} pods starting but not finished between the reporting times"
         )
         period_start_str = period_start.strftime("%Y-%m-%dT%H:%M:%SZ")
-        period_end_str = (period_end - timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        period_end_str = (period_end - timedelta(seconds=1)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
         for (user, group), flavors in metrics.items():
             for metric_key, value in flavors.items():
                 metric_data = {
