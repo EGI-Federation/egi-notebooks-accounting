@@ -60,7 +60,7 @@ class TestHelpers:
     FQAN = "tsuite"
 
     @staticmethod
-    def pod(i: int, start_time: datetime, wall: float | None) -> VM:
+    def pod(i: int, start_time: datetime, wall: float | None = None, **kwargs) -> VM:
         """
         Insert pod into local accounting database.
 
@@ -83,7 +83,7 @@ class TestHelpers:
             end_time = None
             # long running pod
             wall = 7 * 24 * 3600
-        return VM.create(
+        vm = VM.create(
             local_id=local_id,
             machine=f"machine{i}",
             local_user_id=TestHelpers.LUSER,
@@ -96,3 +96,7 @@ class TestHelpers:
             flavor=TestHelpers.flavor_name,
             cpu_duration=0.1 * wall,
         )
+        for k, v in kwargs.items():
+            setattr(vm, k, v)
+        vm.save()
+        return vm

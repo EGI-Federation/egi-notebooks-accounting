@@ -58,7 +58,6 @@ host=jupyterhub.d4science.net
 import json
 import logging
 import os
-from datetime import timezone
 
 import escapism
 import requests
@@ -114,31 +113,6 @@ class D4ScienceRecordPusher(RecordPusher):
         )
         logging.debug(f"Response: {response.text}")
         response.raise_for_status()
-
-    def update_pod_metric(self, pod, metrics, period_start, period_end):
-        if not pod.flavor or pod.flavor not in self.flavor_config:
-            # cannot report
-            logging.debug(f"Flavor {pod.flavor} does not have a configured metric")
-            return
-        user, group = (pod.global_user_name, pod.fqan)
-        user_metrics = metrics.get((user, group), {})
-        flavor_metric = self.flavor_config[pod.flavor]
-        metrics[(user, group)] = user_metrics
-
-        if pod.start_time is None:
-            report_start_time = period_start
-        else:
-            report_start_time = max(
-                period_start, pod.start_time.replace(tzinfo=timezone.utc)
-            )
-        if pod.end_time is None:
-            report_end_time = period_end
-        else:
-            report_end_time = min(period_end, pod.end_time.replace(tzinfo=timezone.utc))
-        flavor_metric_value = user_metrics.get(flavor_metric, 0)
-        user_metrics[flavor_metric] = (
-            flavor_metric_value + (report_end_time - report_start_time).total_seconds()
-        )
 
     def generate_record(self, pod):
         # minInvocationTime
