@@ -32,6 +32,7 @@ class RecordPusher:
 
     description = "Notebooks accounting pusher"
     default_timestamp_file = "egi-notebooks.timestamp"
+    aai_config = "default"
 
     def __init__(self):
         self.dry_run = False
@@ -95,6 +96,18 @@ class RecordPusher:
         self.from_date = from_date
         self.to_date = to_date
 
+    def configure_aai(self, parser):
+        config = parser[self.aai_config] if self.aai_config in parser else {}
+        # AAI
+        self.token_url = os.environ.get(
+            "TOKEN_URL", config.get("token_url", self.default_token_url)
+        )
+        self.client_id = os.environ.get("CLIENT_ID", config.get("client_id", ""))
+        self.client_secret = os.environ.get(
+            "CLIENT_SECRET", config.get("client_secret", "")
+        )
+        self.scope = os.environ.get("SCOPE", config.get("scope", self.default_scope))
+
     def configure(self, config_file):
         parser = ConfigParser()
         parser.read(config_file)
@@ -113,6 +126,7 @@ class RecordPusher:
             "TIMESTAMP_FILE", config.get("timestamp_file", self.default_timestamp_file)
         )
         # return the parser so children can still
+        self.configure_aai(parser)
         return parser
 
     def parse_args(self, argv=None):

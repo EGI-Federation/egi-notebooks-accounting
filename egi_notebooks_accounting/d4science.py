@@ -51,7 +51,7 @@ scope=<scopes>
 
 
 [d4science]
-accounting_url=https://accounting-service.d4science.org/accounting-service/record
+accounting_url=https://accounting-service.d4science.org/accounting-service/record/
 host=jupyterhub.d4science.net
 """
 
@@ -70,11 +70,17 @@ D4SCIENCE_CONFIG = "d4science"
 DEFAULT_ACCOUNTING_URL = (
     "https://accounting-service.d4science.org/accounting-service/record"
 )
+DEFAULT_TOKEN_URL = (
+    "https://accounts.d4science.org/auth/realms/d4science/protocol/openid-connect/token"
+)
+DEFAULT_SCOPE = "openid"
 
 
 class D4ScienceRecordPusher(RecordPusher):
     description = "D4Science Accounting metric pusher"
-    default_token_url = "https://accounts.d4science.org/auth/realms/d4science/protocol/openid-connect/token"
+    aai_config = D4SCIENCE_CONFIG
+    default_token_url = DEFAULT_TOKEN_URL
+    default_scope = DEFAULT_SCOPE
 
     def configure(self, config_file):
         # common values from super
@@ -98,7 +104,7 @@ class D4ScienceRecordPusher(RecordPusher):
             self.token_url, self.client_id, self.client_secret, scope
         )
         response = requests.post(
-            f"{self.accounting_url}/",
+            f"{self.accounting_url}",
             headers={
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",

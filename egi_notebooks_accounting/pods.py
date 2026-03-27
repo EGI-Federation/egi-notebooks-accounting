@@ -107,7 +107,6 @@ def main():
     data["query"] = "last_over_time(kube_pod_created{" + flt + "}[" + rng + "])"
     response = prom.query(data)
     for item in response["data"]["result"]:
-        # print(item)
         pod = prom.get_pod(item, uid=None, default=VM())
         metric = item["metric"]
         pod.start_time = datetime.fromtimestamp(int(item["value"][1]))
@@ -117,7 +116,6 @@ def main():
     data["query"] = "kube_pod_status_phase{" + flt + ",phase='Running'}[" + rng + "]"
     response = prom.query(data)
     for item in response["data"]["result"]:
-        # print(item)
         pod = prom.get_pod(item)
         metric = item["metric"]
         if pod is None:
@@ -199,7 +197,6 @@ def main():
         data["query"] = query
         response = prom.query(data)
         for item in response["data"]["result"]:
-            # print(item)
             uid = None
             if field not in ["cpu_count"]:
                 # dirty hack: parse POD uid from "name" label

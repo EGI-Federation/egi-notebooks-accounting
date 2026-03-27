@@ -71,6 +71,9 @@ DEFAULT_SCOPE = "openid email profile voperson_id entitlements"
 class EOSCRecordPusher(RecordPusher):
     description = "EOSC Accounting metric pusher"
     default_timestamp_file = DEFAULT_TIMESTAMP_FILE
+    aai_config = EOSC_CONFIG
+    default_token_url = DEFAULT_TOKEN_URL
+    default_scope = DEFAULT_SCOPE
 
     def configure(self, config_file):
         # common values from super
@@ -84,16 +87,6 @@ class EOSCRecordPusher(RecordPusher):
         self.installation = eosc_config.get("installation_id", "")
         # Flavors config
         self.flavor_config = parser[FLAVOR_CONFIG] if FLAVOR_CONFIG in parser else {}
-
-        # AAI
-        self.token_url = os.environ.get(
-            "TOKEN_URL", eosc_config.get("token_url", DEFAULT_TOKEN_URL)
-        )
-        self.client_id = os.environ.get("CLIENT_ID", eosc_config.get("client_id", ""))
-        self.client_secret = os.environ.get(
-            "CLIENT_SECRET", eosc_config.get("client_secret", "")
-        )
-        self.scope = os.environ.get("SCOPE", eosc_config.get("scope", DEFAULT_SCOPE))
 
         # EOSC uses a single token for all pushes
         if self.dry_run:
