@@ -16,7 +16,7 @@ Each record is a object as follows:
     "serviceClass": "ServiceClass", /* The service class of the service launching the JOB */
     "callerQualifier": "TOKEN",
     "consumerId": "<USERNAME>",
-    "aggregated": true,
+    "aggregated": false,
     "serviceName": "ServiceName", /* The service name of the service launching the JOB */
     "duration": 376,
     "maxInvocationTime": 376,
@@ -135,7 +135,6 @@ class D4ScienceRecordPusher(RecordPusher):
         )
 
     def generate_record(self, pod):
-        # Fields that we are not considering right now:
         # minInvocationTime
         # maxInvocationTime
         if not pod.flavor:
@@ -159,12 +158,14 @@ class D4ScienceRecordPusher(RecordPusher):
             "serviceClass": service_class,
             "callerQualifier": "TOKEN",
             "consumerId": pod.global_user_name,
-            "aggregated": True,
+            "aggregated": False,
             "serviceName": service_name,
             "scope": pod.fqan,
             "host": self.host,
             "id": str(pod.local_id),
             "duration": int(pod.wall),
+            "minInvocationTime": int(pod.wall),
+            "maxInvocationTime": int(pod.wall),
             # these are in miliseconds
             "startTime": int(pod.start_time.timestamp() * 1000),
             "endTime": int(pod.end_time.timestamp() * 1000),
