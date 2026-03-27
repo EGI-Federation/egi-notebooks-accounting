@@ -3,8 +3,7 @@
 import datetime
 from unittest.mock import call, patch
 
-from .. import d4science
-from .. import recordpusher
+from .. import d4science, recordpusher
 from .conftest import TestHelpers
 
 
