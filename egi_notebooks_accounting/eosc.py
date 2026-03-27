@@ -34,13 +34,11 @@ notebooks_db=<notebooks db file>
 timeout=120
 timestamp_file=<file where the timestamp of the last run is kept>
 
-[aai]
+[eosc]
 token_url=https://proxy.staging.eosc-federation.eu/OIDC/token
 client_secret=<client secret>
 client_id=<client_id>
 scope=<scopes>
-
-[eosc]
 accounting_url=https://api.acc.staging.eosc.grnet.gr
 installation_id=<id of the installation to report accounting for>
 
@@ -72,9 +70,7 @@ DEFAULT_SCOPE = "openid email profile voperson_id entitlements"
 
 class EOSCRecordPusher(RecordPusher):
     description = "EOSC Accounting metric pusher"
-    default_token_url = DEFAULT_TOKEN_URL
     default_timestamp_file = DEFAULT_TIMESTAMP_FILE
-    default_scope = DEFAULT_SCOPE
 
     def configure(self, config_file):
         # common values from super
@@ -88,6 +84,16 @@ class EOSCRecordPusher(RecordPusher):
         self.installation = eosc_config.get("installation_id", "")
         # Flavors config
         self.flavor_config = parser[FLAVOR_CONFIG] if FLAVOR_CONFIG in parser else {}
+
+        # AAI
+        self.token_url = os.environ.get(
+            "TOKEN_URL", eosc_config.get("token_url", DEFAULT_TOKEN_URL)
+        )
+        self.client_id = os.environ.get("CLIENT_ID", eosc_config.get("client_id", ""))
+        self.client_secret = os.environ.get(
+            "CLIENT_SECRET", eosc_config.get("client_secret", "")
+        )
+        self.scope = os.environ.get("SCOPE", eosc_config.get("scope", DEFAULT_SCOPE))
 
         # EOSC uses a single token for all pushes
         if self.dry_run:

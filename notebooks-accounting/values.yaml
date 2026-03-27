@@ -80,6 +80,17 @@ eosc:
   timeout: 120
   flavorMetrics: {}
 
+
+# D4Science accounting paramters
+d4science:
+  # (empty value to disable)
+  schedule:
+  # configuration for the D4Science accounting
+  tokenUrl:
+  clientId:
+  clientSecret:
+  accountingUrl:
+
 # APEL sender parameters
 ssm:
   # (empty value to disable)

@@ -6,12 +6,6 @@ Includes a common configuration that can be expanded by subclasses
 notebooks_db=<notebooks db file>
 timeout=120
 timestamp_file=<file where the timestamp of the last run is kept>
-
-[aai]
-token_url=https://proxy.staging.eosc-federation.eu/OIDC/token
-client_secret=<client secret>
-client_id=<client_id>
-scope=<scopes>
 ```
 
 
@@ -30,7 +24,6 @@ from requests.auth import HTTPBasicAuth
 from .model import db_init
 
 CONFIG = "default"
-AAI_CONFIG = "aai"
 DEFAULT_CONFIG_FILE = "config.ini"
 
 
@@ -38,8 +31,6 @@ class RecordPusher:
     """Skeleton for pushing records"""
 
     description = "Notebooks accounting pusher"
-    default_token_url = ""
-    default_scope = "openid"
     default_timestamp_file = "egi-notebooks.timestamp"
 
     def __init__(self):
@@ -109,7 +100,6 @@ class RecordPusher:
         parser.read(config_file)
 
         config = parser[CONFIG] if CONFIG in parser else {}
-        aai_config = parser[AAI_CONFIG] if AAI_CONFIG in parser else {}
         db_file = os.environ.get("NOTEBOOKS_DB", config.get("notebooks_db", None))
         db_init(db_file)
         verbose = os.environ.get("VERBOSE", config.get("verbose", 0))
@@ -122,19 +112,6 @@ class RecordPusher:
         self.timestamp_file = os.environ.get(
             "TIMESTAMP_FILE", config.get("timestamp_file", self.default_timestamp_file)
         )
-
-        # AAI
-        self.token_url = os.environ.get(
-            "TOKEN_URL", aai_config.get("token_url", self.default_token_url)
-        )
-        self.client_id = os.environ.get("CLIENT_ID", aai_config.get("client_id", ""))
-        self.client_secret = os.environ.get(
-            "CLIENT_SECRET", aai_config.get("client_secret", "")
-        )
-        self.scope = os.environ.get(
-            "SCOPE", aai_config.get("scope", self.default_scope)
-        )
-
         # return the parser so children can still
         return parser
 

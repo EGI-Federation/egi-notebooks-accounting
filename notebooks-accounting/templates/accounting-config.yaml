@@ -82,8 +82,22 @@ data:
     {{ $key }}={{ $val }}
     {{- end }}
 
+    # D4Science
+    [d4science]
+    {{- if .Values.d4science.tokenUrl }}
+    token_url={{ .Values.d4science.tokenUrl }}
+    {{- end }}
+    {{- if .Values.d4science.clientSecret }}
+    client_secret={{ .Values.d4science.clientSecret }}
+    {{- end }}
+    {{- if .Values.d4science.clientId }}
+    client_id={{ .Values.d4science.clientId }}
+    {{- end }}
+
+
+    # EOSC
+    [eosc]
     # AAI
-    [aai]
     {{- if .Values.eosc.tokenUrl }}
     token_url={{ .Values.eosc.tokenUrl }}
     {{- end }}
@@ -93,13 +107,6 @@ data:
     {{- if .Values.eosc.clientId }}
     client_id={{ .Values.eosc.clientId }}
     {{- end }}
-
-    # D4Science
-    [d4science]
-
-
-    # EOSC
-    [eosc]
     {{- if .Values.eosc.accountingUrl }}
     accounting_url={{ .Values.eosc.accountingUrl }}
     {{- end }}
