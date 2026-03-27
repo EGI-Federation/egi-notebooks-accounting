@@ -120,12 +120,12 @@ class D4ScienceRecordPusher(RecordPusher):
         if not pod.flavor:
             logging.debug("Skipping pod as it has no flavor")
             return None
+        service_class = "JupyterHub"
         service_name = "Jupyter"
-        service_class = "Jupyter"
         if pod.machine:
             split_machine = pod.machine.split("rname", 1)
             if len(split_machine) > 1:
-                service_class = (
+                service_name = (
                     escapism.unescape(split_machine[1], escape_char="-")
                     .removeprefix("-")
                     .removesuffix("ServerOption")
@@ -133,7 +133,7 @@ class D4ScienceRecordPusher(RecordPusher):
         record = {
             "recordType": "JobUsageRecord",
             # XXX is this one ok?
-            "jobName": str(pod.local_id),
+            "jobName": pod.flavor,
             "operationCount": 1,
             "serviceClass": service_class,
             "callerQualifier": "TOKEN",
