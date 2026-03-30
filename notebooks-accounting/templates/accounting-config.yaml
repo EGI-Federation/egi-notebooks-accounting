@@ -102,6 +102,9 @@ data:
     {{- if .Values.d4science.accountingUrl }}
     accounting_url={{ .Values.d4science.accountingUrl }}
     {{- end }}
+    {{- if .Values.d4science.host }}
+    host={{ .Values.d4science.host }}
+    {{- end }}
 
     # EOSC
     [eosc]
