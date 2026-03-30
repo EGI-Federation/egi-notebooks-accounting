@@ -38,6 +38,11 @@ accounting:
   #
   fqan: {}
 
+  # Annotations used for groups and flavors
+  # if undefined use defaults
+  group_annotation:
+  flavor_annotation:
+
 # Prometheus endpoint
 prometheus:
   url: "http://prometheus-server.prometheus.svc.cluster.local"

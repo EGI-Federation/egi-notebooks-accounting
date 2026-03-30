@@ -47,6 +47,12 @@ data:
     {{- if .Values.storage.timestamp }}
     timestamp_file={{ .Values.storage.timestamp }}
     {{- end }}
+    {{- if .Values.accounting.group_annotation }}
+    group_annotation={{ .Values.accounting.group_annotation }}
+    {{- end}}
+    {{- if .Values.accounting.flavor_annotation }}
+    flavor_annotation={{ .Values.accounting.flavor_annotation }}
+    {{- end}}
 
     [prometheus]
     {{- if .Values.prometheus.url }}
@@ -93,7 +99,9 @@ data:
     {{- if .Values.d4science.clientId }}
     client_id={{ .Values.d4science.clientId }}
     {{- end }}
-
+    {{- if .Values.d4science.accountingUrl }}
+    accounting_url={{ .Values.d4science.accountingUrl }}
+    {{- end }}
 
     # EOSC
     [eosc]
