@@ -163,7 +163,9 @@ def main():
                 metric["uid"],
             )
             continue
-        pod.global_user_name = metric.get("annotation_hub_jupyter_org_username", None)
+        user = metric.get("annotation_hub_jupyter_org_username", None)
+        if user:
+            pod.global_user_name = user
         primary_group = metric.get(group_annotation_metric, None)
         if primary_group:
             pod.primary_group = primary_group
