@@ -12,4 +12,32 @@ accounting:
   sitename: EGI-NOTEBOOKS
   cloudType: EGI Notebooks
   service:
+  #
+  # APEL only: default CPU count to use for pods without CPU limit
+  #
+  # The empty value (default) will drop a message without CPU for APEL.
+  #
+  defaultCpuCount:
 
+  # catchall FQAN for values not specified in the fqan mapping
+  default_fqan: vo.notebooks.egi.eu
+
+  # Pod dictionary key used for fqan mapping
+  # (primary_group, namespace, image_id, ...)
+  fqan_key: primary_group
+
+  #
+  # Mapping to get the result FQAN
+  #
+  # VO1: value1,value2,...
+  # VO2: value3,value4,...
+  # ...
+  #
+  # Values are taken from the pod according to the selected fqan_key.
+  #
+  fqan: {}
+
+  # Annotations used for groups and flavors
+  # if undefined use defaults
+  group_annotation:
+  flavor_annotation:
