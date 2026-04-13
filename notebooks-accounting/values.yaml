@@ -12,6 +12,7 @@ accounting:
   sitename: EGI-NOTEBOOKS
   cloudType: EGI Notebooks
   service:
+
   #
   # APEL only: default CPU count to use for pods without CPU limit
   #
@@ -41,3 +42,94 @@ accounting:
   # if undefined use defaults
   group_annotation:
   flavor_annotation:
+
+# Prometheus endpoint
+prometheus:
+  url: "http://prometheus-server.prometheus.svc.cluster.local"
+  # user:
+  # password:
+  # filter: "'pod=~'jupyter-.*'"
+  # range: 24h
+
+# Permanent storage, mounted at '/accounting'
+storage:
+  pvcName: shared-accounting-pvc
+  # className:
+  size: 2Gi
+  # directory pool for APEL dumps
+  # * empty value: forces dumps not to be created
+  # * non-empty value: forces dumps to be created
+  # * default: automatic by ssm config (schedule and messaging.path)
+  # apelSpool: /accounting/ssm
+  # storage to local sqlite database (empty value to disable)
+  notebooksDb: /accounting/notebooks.db
+  # timestamp file (empty value to disable)
+  timestamp: /accounting/eosc-timestamp
+
+image:
+  repository: registry.egi.eu/vo.notebooks.egi.eu/svc-accounting
+  # pullPolicy:
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# EOSC accounting paramters
+eosc:
+  # (empty value to disable)
+  schedule:
+  # configuration for the EOSC accounting
+  tokenUrl:
+  clientId:
+  clientSecret:
+  accountingUrl:
+  installationId:
+  timeout: 120
+  flavorMetrics: {}
+
+# D4Science accounting paramters
+d4science:
+  # (empty value to disable)
+  schedule:
+  # configuration for the D4Science accounting
+  tokenUrl:
+  clientId:
+  clientSecret:
+  accountingUrl:
+
+# APEL sender parameters
+ssm:
+  # (empty value to disable)
+  schedule:
+  broker:
+    # msg.argo.grnet.gr, msg-devel.argo.grnet.gr
+    host: msg.argo.grnet.gr
+    port:
+  image:
+    repository: ghcr.io/apel/ssm
+    tag: 3.4.1-1
+    pullPolicy: IfNotPresent
+  messaging:
+    destination: eu-egi-cloud-accounting
+    path: /accounting/ssm
+    token:
+  hostcert:
+  hostkey:
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
