@@ -120,6 +120,9 @@ class D4ScienceRecordPusher(RecordPusher):
         if not pod.flavor:
             logging.debug("Skipping pod as it has no flavor")
             return None
+        if not pod.global_user_name:
+            logging.debug("Skipping pod as it has no user")
+            return None
         service_class = "JupyterHub"
         service_name = "Jupyter"
         if pod.machine:
