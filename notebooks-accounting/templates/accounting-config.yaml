@@ -41,6 +41,18 @@ data:
     {{- else }}
     # notebooks_db=
     {{- end }}
+    {{- if .Values.eosc.timeout }}
+    timeout={{ .Values.eosc.timeout }}
+    {{- end }}
+    {{- if .Values.storage.timestamp }}
+    timestamp_file={{ .Values.storage.timestamp }}
+    {{- end }}
+    {{- if .Values.accounting.group_annotation }}
+    group_annotation={{ .Values.accounting.group_annotation }}
+    {{- end}}
+    {{- if .Values.accounting.flavor_annotation }}
+    flavor_annotation={{ .Values.accounting.flavor_annotation }}
+    {{- end}}
 
     [prometheus]
     {{- if .Values.prometheus.url }}
@@ -76,8 +88,27 @@ data:
     {{ $key }}={{ $val }}
     {{- end }}
 
-    # EOSC accounting
+    # D4Science
+    [d4science]
+    {{- if .Values.d4science.tokenUrl }}
+    token_url={{ .Values.d4science.tokenUrl }}
+    {{- end }}
+    {{- if .Values.d4science.clientSecret }}
+    client_secret={{ .Values.d4science.clientSecret }}
+    {{- end }}
+    {{- if .Values.d4science.clientId }}
+    client_id={{ .Values.d4science.clientId }}
+    {{- end }}
+    {{- if .Values.d4science.accountingUrl }}
+    accounting_url={{ .Values.d4science.accountingUrl }}
+    {{- end }}
+    {{- if .Values.d4science.host }}
+    host={{ .Values.d4science.host }}
+    {{- end }}
+
+    # EOSC
     [eosc]
+    # AAI
     {{- if .Values.eosc.tokenUrl }}
     token_url={{ .Values.eosc.tokenUrl }}
     {{- end }}
@@ -92,12 +123,6 @@ data:
     {{- end }}
     {{- if .Values.eosc.installationId }}
     installation_id={{ .Values.eosc.installationId }}
-    {{- end }}
-    {{- if .Values.eosc.timeout }}
-    timeout={{ .Values.eosc.timeout }}
-    {{- end }}
-    {{- if .Values.storage.timestamp }}
-    timestamp_file={{ .Values.storage.timestamp }}
     {{- end }}
 
     [eosc.flavors]

@@ -14,7 +14,7 @@ from .conftest import TestHelpers
 @pytest.fixture(scope="function")
 def delete_timestamp(pytestconfig):
     """Delete EOSC last report timestamp file."""
-    timestamp_file = pytestconfig.eosc_config.get(
+    timestamp_file = pytestconfig.config.get(
         "timestamp_file", eosc.DEFAULT_TIMESTAMP_FILE
     )
     Path.unlink(timestamp_file, missing_ok=True)

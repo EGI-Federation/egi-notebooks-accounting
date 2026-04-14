@@ -19,6 +19,8 @@ DEFAULT_FILTER = "pod=~'jupyter-.*'"
 DEFAULT_FQANS: Dict[str, List[str]] = {}
 DEFAULT_FQAN_KEY = "primary_group"
 DEFAULT_RANGE = "24h"
+DEFAULT_GROUP_ANNOTATION = "egi.eu/primary_group"
+DEFAULT_FLAVOR_ANNOTATION = "egi.eu/flavor"
 
 
 def main():
@@ -39,6 +41,20 @@ def main():
     logging.basicConfig(level=verbose)
     fqan_key = os.environ.get("FQAN_KEY", config.get("fqan_key", DEFAULT_FQAN_KEY))
     spool_dir = os.environ.get("APEL_SPOOL", config.get("apel_spool"))
+
+    # Annotations
+    group_annotation = os.environ.get(
+        "GROUP_ANNOTATION", config.get("group_annotation", DEFAULT_GROUP_ANNOTATION)
+    )
+    group_annotation_metric = (
+        f'annotation_{group_annotation.replace(".", "_").replace("/", "_")}'
+    )
+    flavor_annotation = os.environ.get(
+        "FLAVOR_ANNOTATION", config.get("flavor_annotation", DEFAULT_FLAVOR_ANNOTATION)
+    )
+    flavor_annotation_metric = (
+        f'annotation_{flavor_annotation.replace(".", "_").replace("/", "_")}'
+    )
 
     prom_config = parser[PROM_CONFIG] if PROM_CONFIG in parser else {}
     flt = os.environ.get("FILTER", prom_config.get("filter", DEFAULT_FILTER))
@@ -91,7 +107,6 @@ def main():
     data["query"] = "last_over_time(kube_pod_created{" + flt + "}[" + rng + "])"
     response = prom.query(data)
     for item in response["data"]["result"]:
-        # print(item)
         pod = prom.get_pod(item, uid=None, default=VM())
         metric = item["metric"]
         pod.start_time = datetime.fromtimestamp(int(item["value"][1]))
@@ -101,7 +116,6 @@ def main():
     data["query"] = "kube_pod_status_phase{" + flt + ",phase='Running'}[" + rng + "]"
     response = prom.query(data)
     for item in response["data"]["result"]:
-        # print(item)
         pod = prom.get_pod(item)
         metric = item["metric"]
         if pod is None:
@@ -135,6 +149,7 @@ def main():
                 pod.end_time = pod.start_time
                 pod.status = "completed"
     # ==== USER ====
+
     data["query"] = "last_over_time(kube_pod_annotations{" + flt + "}[" + rng + "])"
     response = prom.query(data)
     for item in response["data"]["result"]:
@@ -148,9 +163,15 @@ def main():
                 metric["uid"],
             )
             continue
-        pod.global_user_name = metric.get("annotation_hub_jupyter_org_username", None)
-        pod.primary_group = metric.get("annotation_egi_eu_primary_group", None)
-        pod.flavor = metric.get("annotation_egi_eu_flavor", None)
+        user = metric.get("annotation_hub_jupyter_org_username", None)
+        if user:
+            pod.global_user_name = user
+        primary_group = metric.get(group_annotation_metric, None)
+        if primary_group:
+            pod.primary_group = primary_group
+        flavor = metric.get(flavor_annotation_metric, None)
+        if flavor:
+            pod.flavor = flavor
     # ==== IMAGE ====
     data["query"] = (
         "last_over_time(kube_pod_container_info{"
@@ -178,13 +199,16 @@ def main():
         data["query"] = query
         response = prom.query(data)
         for item in response["data"]["result"]:
-            # print(item)
             uid = None
             if field not in ["cpu_count"]:
                 # dirty hack: parse POD uid from "name" label
                 if "name" not in item["metric"]:
                     continue
-                uid = item["metric"]["name"].split("_")[-2]
+                try:
+                    uid = item["metric"]["name"].split("_")[-2]
+                except IndexError:
+                    # not matching the expected format, ignore
+                    pass
             pod = prom.get_pod(item, uid)
             metric = item["metric"]
             if pod is None:

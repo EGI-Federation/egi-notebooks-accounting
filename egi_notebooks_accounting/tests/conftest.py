@@ -20,6 +20,7 @@ def pytest_configure(config):
     parser.read(config_file)
     config.config: dict = parser["default"] if "default" in parser else {}
     config.eosc_config: dict = parser["eosc"] if "eosc" in parser else {}
+    config.d4science_config: dict = parser["d4science"] if "d4science" in parser else {}
     config.flavor_config: dict = (
         parser["eosc.flavors"] if "eosc.flavors" in parser else {}
     )
@@ -27,6 +28,11 @@ def pytest_configure(config):
     config.db_file: str = config.config.get("notebooks_db")
     TestHelpers.flavor_name = list(config.flavor_config.keys())[0]
     TestHelpers.flavor_metric = list(config.flavor_config.values())[0]
+
+
+@pytest.fixture()
+def config_file(pytestconfig):
+    return pytestconfig.config_file
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -54,7 +60,7 @@ class TestHelpers:
     FQAN = "tsuite"
 
     @staticmethod
-    def pod(i: int, start_time: datetime, wall: float | None) -> VM:
+    def pod(i: int, start_time: datetime, wall: float | None = None, **kwargs) -> VM:
         """
         Insert pod into local accounting database.
 
@@ -77,7 +83,7 @@ class TestHelpers:
             end_time = None
             # long running pod
             wall = 7 * 24 * 3600
-        return VM.create(
+        vm = VM.create(
             local_id=local_id,
             machine=f"machine{i}",
             local_user_id=TestHelpers.LUSER,
@@ -90,3 +96,7 @@ class TestHelpers:
             flavor=TestHelpers.flavor_name,
             cpu_duration=0.1 * wall,
         )
+        for k, v in kwargs.items():
+            setattr(vm, k, v)
+        vm.save()
+        return vm
