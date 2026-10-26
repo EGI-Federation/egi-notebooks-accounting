@@ -1,4 +1,4 @@
-FROM python:3.13.17-slim
+FROM python:3.13.17
 
 WORKDIR /egi-notebooks-accounting
 
@@ -8,5 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN ls -a && git status
 RUN pip install --no-cache-dir .
