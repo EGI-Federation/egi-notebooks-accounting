@@ -8,5 +8,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN ls -a
+RUN ls -a && git status
 RUN pip install --no-cache-dir .
