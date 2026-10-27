@@ -1,4 +1,4 @@
-FROM python:3.13.17
+FROM python:3.15.0
 
 WORKDIR /egi-notebooks-accounting
 
