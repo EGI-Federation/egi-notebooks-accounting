@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
       - name: Install requirements
         run: |
           pip install -r dev-requirements.txt
